@@ -40,7 +40,7 @@
 #include <grp.h>
 #include <assert.h>
 
-#include "../config.h"
+#include "config.h"
 
 #if HAVE_NCURSESW_H           /* if <ncursesw.h> should be used              */
 #  include <ncursesw.h>
@@ -83,9 +83,9 @@
 #include "readlinewrapper.h"
 #endif /* HAS_READLINE */
 
-#ifndef HAVE_SIGBLOCK
+/*#ifndef HAVE_SIGBLOCK
 #include "sigblock.h"
-#endif
+#endif*/
 
 /* I hear voices, that it is needed by RH5.2 ;) */
 #define _REGEX_RE_COMP

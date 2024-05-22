@@ -26,7 +26,6 @@ Copyright 2000 @copyright{} @value{AUTHOR}@*
 @title Pinfo
 @subtitle Version of @value{PROGRAM} @value{VERSION}
 @subtitle Edition @value{EDITION}
-@subtitle @value{UPDATED-MONTH}
 @author @value{AUTHOR}
 @author @value{CONTACT}
 @page
