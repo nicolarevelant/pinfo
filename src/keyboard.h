@@ -28,7 +28,7 @@
 /* adapted from Midnight Commander */
 
 /* macro to get CTRL+key sequence */
-#define KEY_CTRL(x) ((x)&31)
+#define KEY_CTRL(x) ((x) & 31)
 /* macro to get ALT+key sequence */
 #define KEY_ALT(x) (0x200 | (x))
 #define is_enter_key(c) ((c) == '\r' || (c) == '\n' || (c) == KEY_ENTER)

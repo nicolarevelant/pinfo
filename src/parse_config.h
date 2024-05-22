@@ -31,8 +31,7 @@
 #define BLINK 1
 #define NO_BLINK 0
 
-typedef struct keybindings
-{
+typedef struct keybindings {
 	int totalsearch_1, totalsearch_2;
 	int search_1, search_2;
 	int goto_1, goto_2;
@@ -61,41 +60,42 @@ typedef struct keybindings
 	int print_1, print_2;
 	int left_1, left_2;
 	int right_1, right_2;
-}
-keybindings;
+} keybindings;
 
 #ifdef HAVE_CURSES_COLOR
-typedef struct colours
-{
+typedef struct colours {
 	int normal_fore, normal_back, normal_bold, normal_blink;
-	int menuselected_fore, menuselected_back, menuselected_bold, menuselected_blink;
+	int menuselected_fore, menuselected_back, menuselected_bold,
+		menuselected_blink;
 	int menu_fore, menu_back, menu_bold, menu_blink;
-	int noteselected_fore, noteselected_back, noteselected_bold, noteselected_blink;
+	int noteselected_fore, noteselected_back, noteselected_bold,
+		noteselected_blink;
 	int note_fore, note_back, note_bold, note_blink;
 	int topline_fore, topline_back, topline_bold, topline_blink;
 	int bottomline_fore, bottomline_back, bottomline_bold, bottomline_blink;
 	int manualbold_fore, manualbold_back, manualbold_bold, manualbold_blink;
-	int manualitalic_fore, manualitalic_back, manualitalic_bold, manualitalic_blink;
+	int manualitalic_fore, manualitalic_back, manualitalic_bold,
+		manualitalic_blink;
 	int url_fore, url_back, url_bold, url_blink;
 	int urlselected_fore, urlselected_back, urlselected_bold, urlselected_blink;
-	int infohighlight_fore, infohighlight_back, infohighlight_bold, infohighlight_blink;
+	int infohighlight_fore, infohighlight_back, infohighlight_bold,
+		infohighlight_blink;
 	int searchhighlight_fore, searchhighlight_back, searchhighlight_bold,
 		searchhighlight_blink;
-}
-colours;
+} colours;
 #endif /* HAVE_CURSES_COLOR */
 
 extern int use_manual;
 
-int parse_config (void);
-int parse_line (char *line);
-char *str_toupper (char *s);
-char *skip_whitespace (char *s);
-char *remove_quotes (char *str);
+int parse_config(void);
+int parse_line(char *line);
+char *str_toupper(char *s);
+char *skip_whitespace(char *s);
+char *remove_quotes(char *str);
 
 #ifndef ___DONT_USE_REGEXP_SEARCH___
-extern regex_t *h_regexp;	/* regexps to highlight */
-extern int h_regexp_num;	/* number of those regexps */
+extern regex_t *h_regexp; /* regexps to highlight */
+extern int h_regexp_num;  /* number of those regexps */
 #endif
 
 #endif

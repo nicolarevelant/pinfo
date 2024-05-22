@@ -24,19 +24,19 @@
 
 /* numbers of color pairs in curses color definitions */
 
-#define NORMAL           1
-#define MENUSELECTED     2
-#define NOTESELECTED     3
-#define MENU             4
-#define NOTE             5
-#define TOPLINE          6
-#define BOTTOMLINE       7
-#define MANUALBOLD       8
-#define MANUALITALIC     9
-#define URL              10
-#define URLSELECTED      11
-#define INFOHIGHLIGHT    12
-#define SEARCHHIGHLIGHT  13
+#define NORMAL 1
+#define MENUSELECTED 2
+#define NOTESELECTED 3
+#define MENU 4
+#define NOTE 5
+#define TOPLINE 6
+#define BOTTOMLINE 7
+#define MANUALBOLD 8
+#define MANUALITALIC 9
+#define URL 10
+#define URLSELECTED 11
+#define INFOHIGHLIGHT 12
+#define SEARCHHIGHLIGHT 13
 
 /* those bellow hold color attributes for named screen widgets */
 
@@ -58,6 +58,6 @@ extern int searchhighlight;
  * initialize color values/attributes/etc.  Either for color and monochrome
  * mode.
  */
-void initcolors ();
+void initcolors();
 
 #endif

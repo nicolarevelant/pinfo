@@ -21,8 +21,8 @@
 #include "common_includes.h"
 
 #include <ctype.h>
-#include <sys/stat.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 
 #define HTTPSECTION 100
 #define FTPSECTION 101
@@ -31,10 +31,10 @@
 /* check if a char is a hyphen character */
 int ishyphen(unsigned char ch);
 /* load manual */
-void loadmanual(FILE * id);
+void loadmanual(FILE *id);
 /* handle keyboard */
 int manualwork();
-void rescan_selected();	/* scan for potential link to select on
+void rescan_selected(); /* scan for potential link to select on
 							   viewed manual page */
 /* self explanatory */
 void showmanualscreen();
@@ -59,19 +59,18 @@ char **manual = 0;
 unsigned ManualLines = 0;
 int selected = -1;		/* number of selected link(offset in 'manuallinks',
 						   bellow) */
-unsigned manualpos = 0;	/* number of the first line, which is painted on
+unsigned manualpos = 0; /* number of the first line, which is painted on
 						   screen */
 
-unsigned manualcol = 0;	/* the first displayed column of manpage--
+unsigned manualcol = 0; /* the first displayed column of manpage--
 						   for moving the screen left/right */
 
-int manual_aftersearch = 0;	/* this is set if man page is now after search
+int manual_aftersearch = 0; /* this is set if man page is now after search
 							   operation */
 int manwidthChanged = 0;	/* this flag indicates whether the env variable
 							   $MANWIDTH was changed by pinfo */
 
-typedef struct
-{
+typedef struct {
 	/* name of a manual */
 	char name[128];
 	/* section */
@@ -80,11 +79,10 @@ typedef struct
 	int selected;
 	/* what was the last manualpos */
 	int pos;
-}
-manhistory;			/*
-					 * type for the `lastread' history entries, when viewing
-					 * man pages.
-					 */
+} manhistory; /*
+			   * type for the `lastread' history entries, when viewing
+			   * man pages.
+			   */
 
 /* manual lastread history */
 manhistory *manualhistory = 0;
@@ -92,9 +90,8 @@ manhistory *manualhistory = 0;
 int manualhistorylength = 0;
 
 /* this structure describes a hyperlink in manual viewer */
-typedef struct
-{			/* struct for hypertext references */
-	unsigned int line;		/* line of the manpage, where the reference is */
+typedef struct {	   /* struct for hypertext references */
+	unsigned int line; /* line of the manpage, where the reference is */
 	/* column of that line */
 	unsigned int col;
 	/* name of the reference */
@@ -104,8 +101,7 @@ typedef struct
 	int section_mark;
 	/* determine whether there is a hyphen above */
 	int carry;
-}
-manuallink;
+} manuallink;
 
 /* a set of manual references of man page */
 manuallink *manuallinks = 0;
@@ -116,18 +112,14 @@ unsigned ManualLinks = 0;
 /* semaphore for checking if it's a history(left arrow) call */
 int historical = 0;
 
-
 void
 /* free buffers allocated by current man page */
-manual_free_buffers()
-{
+manual_free_buffers() {
 	unsigned int i;
 	/* first free previously allocated memory */
 	/* for the manual itself... */
-	if (manual)
-	{
-		for (i = 0; i <= ManualLines; i++)
-		{
+	if (manual) {
+		for (i = 0; i <= ManualLines; i++) {
 			xfree(manual[i]);
 		}
 		xfree(manual);
@@ -135,10 +127,8 @@ manual_free_buffers()
 		ManualLines = 0;
 	}
 	/* ...and for the list of manual hypertext */
-	if (manuallinks)
-	{				/* links */
-		for (i = 0; i < ManualLinks; i++)
-		{
+	if (manuallinks) { /* links */
+		for (i = 0; i < ManualLinks; i++) {
 			xfree(manuallinks[i].name);
 		}
 		xfree(manuallinks);
@@ -149,23 +139,21 @@ manual_free_buffers()
 }
 
 /* initialize history variables for manual pages.  */
-void
-set_initial_history(char *name)
-{
+void set_initial_history(char *name) {
 	int len = strlen(name), i;
 	char *name1 = strdup(name);
 
 	/* one object of array */
 	manualhistory = xmalloc(sizeof(manhistory));
 	/* filter trailing spaces */
-	while ((len > 1) &&(isspace(name1[len - 1])))
-	{
+	while ((len > 1) && (isspace(name1[len - 1]))) {
 		name1[len - 1] = 0;
 		len--;
 	}
 	i = len;
 	/* find the beginning of the last token */
-	for (i = len - 1;(i > 0) &&(!isspace(name1[i])); i--);
+	for (i = len - 1; (i > 0) && (!isspace(name1[i])); i--)
+		;
 
 	/* if we've found space, then we move to the first nonspace character */
 	if (i > 0)
@@ -184,8 +172,7 @@ set_initial_history(char *name)
 		FILE *pathFile;
 		snprintf(buf, sizeof(buf), "man -w -W %s %s", ManOptions, name);
 		pathFile = popen(buf, "r");
-		if (fgets(buf, sizeof(buf), pathFile)==NULL)
-		{
+		if (fgets(buf, sizeof(buf), pathFile) == NULL) {
 			fprintf(stderr, "Error executing command '%s'\n", buf);
 			exit(1);
 		}
@@ -199,9 +186,10 @@ set_initial_history(char *name)
 			}
 		}
 		if (lastButOneSlash) {
-			*lastSlash = 0; /* terminate the section */
+			*lastSlash = 0;		  /* terminate the section */
 			lastButOneSlash += 4; /* skip "/man", and land on the section */
-			strncpy(manualhistory[0].sect, lastButOneSlash, sizeof(manualhistory[0].sect)-1);
+			strncpy(manualhistory[0].sect, lastButOneSlash,
+					sizeof(manualhistory[0].sect) - 1);
 		}
 	}
 
@@ -213,30 +201,28 @@ set_initial_history(char *name)
 }
 
 /* construct man name; take care about carry */
-void
-construct_manualname(char *buf, int which)
-{
-	if (!manuallinks[which].carry)
-	{
+void construct_manualname(char *buf, int which) {
+	if (!manuallinks[which].carry) {
 		/* workaround for names starting with '(' */
-		if (manuallinks[which].name[0] == '(') strcpy(buf, manuallinks[which].name + 1);
-		else strcpy(buf, manuallinks[which].name);
+		if (manuallinks[which].name[0] == '(')
+			strcpy(buf, manuallinks[which].name + 1);
+		else
+			strcpy(buf, manuallinks[which].name);
 		return;
-	}
-	else
-	{
+	} else {
 		/* normal manual reference */
-		if (manuallinks[which].section_mark < HTTPSECTION)
-		{
+		if (manuallinks[which].section_mark < HTTPSECTION) {
 			char *base = xmalloc(1024);
 			char *ptr;
 			int tmppos;
-			strncpy(base, manual[manuallinks[which].line - 1],1023);
+			strncpy(base, manual[manuallinks[which].line - 1], 1023);
 			strip_manual(base);
 			ptr = base + strlen(base) - 3;
-			while (((isalpha(*ptr)) ||(*ptr == '.') ||(*ptr == '_')) &&(ptr > base))
+			while (((isalpha(*ptr)) || (*ptr == '.') || (*ptr == '_')) &&
+				   (ptr > base))
 				ptr--;
-			/* workaround for man pages with leading '(' see svgalib man pages */
+			/* workaround for man pages with leading '(' see svgalib man pages
+			 */
 			if (*ptr == '(')
 				ptr++;
 			strcpy(buf, ptr);
@@ -247,8 +233,7 @@ construct_manualname(char *buf, int which)
 			xfree(base);
 		}
 		/* url reference */
-		else
-		{
+		else {
 			char *base = xmalloc(1024);
 			char *ptr, *eptr;
 			int namelen = strlen(manuallinks[which].name);
@@ -270,9 +255,7 @@ construct_manualname(char *buf, int which)
 }
 
 /* this is something like main() function for the manual viewer code.  */
-int
-handlemanual(char *name)
-{
+int handlemanual(char *name) {
 	int return_value = 0;
 	struct stat statbuf;
 	FILE *id;
@@ -282,8 +265,7 @@ handlemanual(char *name)
 	char *raw_tempfilename = 0;
 	char *apropos_tempfilename = 0;
 
-	if (tmpfilename1)
-	{
+	if (tmpfilename1) {
 		unlink(tmpfilename1);
 		xfree(tmpfilename1);
 	}
@@ -294,8 +276,7 @@ handlemanual(char *name)
 	/* if ncurses, get maxx and maxy */
 	getmaxyx(stdscr, maxy, maxx);
 	myendwin();
-	if ((!getenv("MANWIDTH")) ||(manwidthChanged))
-	{
+	if ((!getenv("MANWIDTH")) || (manwidthChanged)) {
 		/* set MANWIDTH environment variable */
 		static char tmp[24];
 		snprintf(tmp, 24, "MANWIDTH=%d", maxx);
@@ -309,13 +290,13 @@ handlemanual(char *name)
 #endif /* getmaxyx */
 #ifdef NIETS
 	/****************************************************************************
-	 *                    Ignore macros part: BEGIN                             *
-	 * PS: Siewca: I still expect that you'll isolate it to a single procedure  *
-	 * Description(by PB): This code opens a manpage file, and filters it from *
-	 * dangerous macros. The output is put into a temporary file, which is then *
-	 * used as the `name' filename argument of this(handlemanual) procedure.   *
-	 * There is a stored variable raw_tempfilename to allow unlinking this temp *
-	 * file after usage							    *
+	 *                    Ignore macros part: BEGIN * PS: Siewca: I still expect
+	 *that you'll isolate it to a single procedure  * Description(by PB): This
+	 *code opens a manpage file, and filters it from * dangerous macros. The
+	 *output is put into a temporary file, which is then * used as the `name'
+	 *filename argument of this(handlemanual) procedure.   * There is a stored
+	 *variable raw_tempfilename to allow unlinking this temp * file after usage
+	 **
 	 ****************************************************************************/
 	FILE *source;
 	char **ignored_entries;
@@ -329,16 +310,13 @@ handlemanual(char *name)
 	/* if the pointer is non-null */
 	if (ignoredmacros)
 		/* if there are some macros */
-		if (*ignoredmacros && strlen(ignoredmacros))
-		{				/* that should be ignored   */
+		if (*ignoredmacros &&
+			strlen(ignoredmacros)) { /* that should be ignored   */
 			*location = '\0';
 			/* we need to know the path */
-			snprintf(cmd, 255, "man -W %s %s",
-					ManOptions,
-					name);
+			snprintf(cmd, 255, "man -W %s %s", ManOptions, name);
 			id = popen(cmd, "r");
-			if (!id)
-			{
+			if (!id) {
 				printf(_("Error: Cannot call man command.\n"));
 				return 1;
 			}
@@ -346,35 +324,31 @@ handlemanual(char *name)
 			fgets(location, 255, id);
 			pclose(id);
 
-			if (*location == '\0')
-			{
+			if (*location == '\0') {
 				printf(_("Error: No manual page found either.\n"));
-				if (use_apropos)
-				{
+				if (use_apropos) {
 					printf(_("Apropos pages:\n"));
-					snprintf(cmd, 255, "apropos %s|cat %s", name, StderrRedirection);
+					snprintf(cmd, 255, "apropos %s|cat %s", name,
+							 StderrRedirection);
 					xsystem(cmd);
 				}
 				return 1;
 			}
 
-
 			ignored_items++;
 			prev = ignoredmacros;
 			/* counting items */
-			while ((end = strchr(prev, ':')))
-			{
+			while ((end = strchr(prev, ':'))) {
 				ignored_items++;
 				prev = end + 1;
 			}
 
-			ignored_entries =(char **) xmalloc(ignored_items * sizeof(char **));
+			ignored_entries = (char **)xmalloc(ignored_items * sizeof(char **));
 			ignored_entries[0] = ignoredmacros;
 			prev = ignoredmacros;
 			i = 0;
 			/* creating pointers */
-			while ((end = strchr(prev, ':')))
-			{
+			while ((end = strchr(prev, ':'))) {
 				*end = '\0';
 				prev = end + 1;
 				i++;
@@ -387,66 +361,58 @@ handlemanual(char *name)
 
 			/* checking if it's compressed */
 			prev = index(location, '\0');
-			if ((strlen(location)) > 3
-					&&((*(prev - 1) == 'Z' && *(prev - 2) == '.')
-						||(*(prev - 1) == 'z' && *(prev - 2) == 'g' && *(prev - 3) == '.')
-					   )
-			   )
-			{
+			if ((strlen(location)) > 3 &&
+				((*(prev - 1) == 'Z' && *(prev - 2) == '.') ||
+				 (*(prev - 1) == 'z' && *(prev - 2) == 'g' &&
+				  *(prev - 3) == '.'))) {
 				if (verbose)
 					printf("%s %s\n", _("Calling gunzip for"), location);
 				snprintf(cmd, 255, "gunzip -c %s", location);
 				source = popen(cmd, "r");
 				zipped = 1;
-				if (!source)
-				{
+				if (!source) {
 					printf(_("Couldn't call gunzip.\n"));
 					return 1;
 				}
-			}
-			else /* from cmd output  */
+			} else /* from cmd output  */
 				source = fopen(location, "r");
 			name = make_tempfile();
 			raw_tempfilename = name;
 			id = fopen(name, "w");
 
 			/* we read until eof */
-			while (!feof(source))
-			{
+			while (!feof(source)) {
 				if (fgets(line, 1024, source) == NULL)
 					line[0] = '\0';
 
 				/* macro starts with a dot*/
-				if (line[0] != '.' ||(strlen(line)) <(size_t) 2)
-				{
+				if (line[0] != '.' || (strlen(line)) < (size_t)2) {
 					fprintf(id, "%s", line);
 					continue;
-				}
-				else
-					while (i >= 0)
-					{
+				} else
+					while (i >= 0) {
 						macroline_size = strlen(ignored_entries[i]);
 						if (strlen(line + 1) < macroline_size)
 							macroline_size = strlen(line + 1);
-						if ((strncmp(ignored_entries[i], line + 1, macroline_size)) == 0
-								&&(*(line + 1 +(int) macroline_size) == ' '
-									|| *(line + 1 +(int) macroline_size) == '\n'
-									|| *(line + 1 +(int) macroline_size) == '\t'))
-						{
-							if (quote_ignored)
-							{
+						if ((strncmp(ignored_entries[i], line + 1,
+									 macroline_size)) == 0 &&
+							(*(line + 1 + (int)macroline_size) == ' ' ||
+							 *(line + 1 + (int)macroline_size) == '\n' ||
+							 *(line + 1 + (int)macroline_size) == '\t')) {
+							if (quote_ignored) {
 								if ((prev = rindex(line, '\n')))
 									*prev = '\0';
-								sprintf(cmd, "\n.br\n.nf\n[ [pinfo] - %s: %.42s", _("IGNORING"), line);
-								if ((strlen(line)) >(size_t) 42)
+								sprintf(cmd,
+										"\n.br\n.nf\n[ [pinfo] - %s: %.42s",
+										_("IGNORING"), line);
+								if ((strlen(line)) > (size_t)42)
 									strcat(cmd, "(...)]\n.fi\n");
 								else
 									strcat(cmd, " ]\n.fi\n");
-							}
-							else
-							{
-								sprintf(cmd, ".\\\" removed macro: %.42s", line);
-								if ((strlen(line)) >(size_t) 42)
+							} else {
+								sprintf(cmd, ".\\\" removed macro: %.42s",
+										line);
+								if ((strlen(line)) > (size_t)42)
 									strcat(cmd, "(...)");
 							}
 							strcpy(line, cmd);
@@ -457,69 +423,56 @@ handlemanual(char *name)
 
 				fprintf(id, "%s", line);
 				i = ignored_items - 1;
-			}			/* while (!feof(source)) */
+			} /* while (!feof(source)) */
 			if (zipped)
 				pclose(source);
 			else
 				fclose(source);
 			fclose(id);
 			free(ignored_entries);
-		}				/* if (ignored_macros... */
-	/****************************************************************************
-	 *                    Ignore macros part: END                               *
-	 ****************************************************************************/
+		} /* if (ignored_macros... */
+		/****************************************************************************
+		 *                    Ignore macros part: END *
+		 ****************************************************************************/
 #endif
-	if (!plain_apropos)
-	{
-		snprintf(cmd, 255, "man %s %s %s > %s",
-				ManOptions,
-				name,
-				StderrRedirection,
-				tmpfilename1);
+	if (!plain_apropos) {
+		snprintf(cmd, 255, "man %s %s %s > %s", ManOptions, name,
+				 StderrRedirection, tmpfilename1);
 	}
 
-	if (plain_apropos || (system_check(cmd) != 0))
-	{
-		if (!plain_apropos)
-		{
+	if (plain_apropos || (system_check(cmd) != 0)) {
+		if (!plain_apropos) {
 			unlink(tmpfilename1);
 			printf(_("Error: No manual page found\n"));
 		}
 		plain_apropos = 0;
-		if (use_apropos)
-		{
+		if (use_apropos) {
 			printf(_("Calling apropos \n"));
 			apropos_tempfilename = make_tempfile();
 			snprintf(cmd, 4096, "apropos %s > %s", name, apropos_tempfilename);
-			if (system_check(cmd) != 0)
-			{
+			if (system_check(cmd) != 0) {
 				printf(_("Nothing appropriate\n"));
 				unlink(apropos_tempfilename);
 				return 1;
 			}
 			id = fopen(apropos_tempfilename, "r");
-		}
-		else
+		} else
 			return 1;
-	}
-	else
+	} else
 		id = fopen(tmpfilename1, "r");
 	init_curses();
-
 
 	set_initial_history(name);
 	/* load manual to memory */
 	loadmanual(id);
 	fclose(id);
-	do
-	{
+	do {
 		/* manualwork handles all actions when viewing man page */
 		return_value = manualwork();
 #ifdef getmaxyx
 		/* if ncurses, get maxx and maxy */
 		getmaxyx(stdscr, maxy, maxx);
-		if ((!getenv("MANWIDTH")) ||(manwidthChanged))
-		{
+		if ((!getenv("MANWIDTH")) || (manwidthChanged)) {
 			/* set MANWIDTH environment variable */
 			static char tmp[24];
 			snprintf(tmp, 24, "MANWIDTH=%d", maxx);
@@ -529,10 +482,8 @@ handlemanual(char *name)
 #endif
 		manual_aftersearch = 0;
 		/* -1 is quit key */
-		if (return_value != -1)
-		{
-			if (tmpfilename2)
-			{
+		if (return_value != -1) {
+			if (tmpfilename2) {
 				unlink(tmpfilename2);
 				xfree(tmpfilename2);
 			}
@@ -541,39 +492,29 @@ handlemanual(char *name)
 			 * key_back is not pressed; and return_value is an offset to
 			 * manuallinks
 			 */
-			if (return_value != -2)
-			{
+			if (return_value != -2) {
 				construct_manualname(manualname, return_value);
-				snprintf(cmd, 4096, "man %s %s %s %s > %s",
-						ManOptions,
-						manuallinks[return_value].section,
-						manualname,
-						StderrRedirection,
-						tmpfilename2);
-			}
-			else /* key_back was pressed */
+				snprintf(cmd, 4096, "man %s %s %s %s > %s", ManOptions,
+						 manuallinks[return_value].section, manualname,
+						 StderrRedirection, tmpfilename2);
+			} else /* key_back was pressed */
 			{
 				manualhistorylength--;
-				if (manualhistorylength == 0 && apropos_tempfilename)
-				{
+				if (manualhistorylength == 0 && apropos_tempfilename) {
 					id = fopen(apropos_tempfilename, "r");
 					loadmanual(id);
 					fclose(id);
 					continue;
 				}
 				if (manualhistory[manualhistorylength].sect[0] == 0)
-					snprintf(cmd, 255, "man %s %s %s > %s",
-							ManOptions,
-							manualhistory[manualhistorylength].name,
-							StderrRedirection,
-							tmpfilename2);
+					snprintf(cmd, 255, "man %s %s %s > %s", ManOptions,
+							 manualhistory[manualhistorylength].name,
+							 StderrRedirection, tmpfilename2);
 				else
-					snprintf(cmd, 255, "man %s %s %s %s > %s",
-							ManOptions,
-							manualhistory[manualhistorylength].sect,
-							manualhistory[manualhistorylength].name,
-							StderrRedirection,
-							tmpfilename2);
+					snprintf(cmd, 255, "man %s %s %s %s > %s", ManOptions,
+							 manualhistory[manualhistorylength].sect,
+							 manualhistory[manualhistorylength].name,
+							 StderrRedirection, tmpfilename2);
 				/*
 				 * flag to make sure, that
 				 * manualwork will refresh the variables manualpos and selected
@@ -583,47 +524,42 @@ handlemanual(char *name)
 			}
 			xsystem(cmd);
 			stat(tmpfilename2, &statbuf);
-			if (statbuf.st_size > 0)
-			{
+			if (statbuf.st_size > 0) {
 				snprintf(cmd, 255, "mv %s %s", tmpfilename2, tmpfilename1);
 				/* create tmp file containing man page */
 				xsystem(cmd);
 				/* open man page */
 				id = fopen(tmpfilename1, "r");
-				if (id != NULL)
-				{
+				if (id != NULL) {
 					/* now we create history entry for new page */
-					if (!historical)
-					{
+					if (!historical) {
 						manualhistorylength++;
-						manualhistory = xrealloc(manualhistory,(manualhistorylength + 2) * sizeof(manhistory));
+						manualhistory =
+							xrealloc(manualhistory, (manualhistorylength + 2) *
+														sizeof(manhistory));
 						/*
 						 * we can write so since this code applies
 						 * only when it's not a history call
 						 */
 						strcpy(manualhistory[manualhistorylength].name,
-								manualname);
+							   manualname);
 						strcpy(manualhistory[manualhistorylength].sect,
-								manuallinks[return_value].section);
+							   manuallinks[return_value].section);
 					}
 					/* loading manual page and its defaults... */
 					loadmanual(id);
 					fclose(id);
 					/* continuing with creation of history */
-					if (!historical)
-					{
+					if (!historical) {
 						manualhistory[manualhistorylength].pos = manualpos;
 						manualhistory[manualhistorylength].selected = selected;
-					}
-					else
+					} else
 						historical = 0;
-				}
-				else
+				} else
 					return_value = -1;
 			}
 		}
-	}
-	while (return_value != -1);
+	} while (return_value != -1);
 	if (apropos_tempfilename)
 		unlink(apropos_tempfilename);
 	/* we were using temporary */
@@ -635,8 +571,7 @@ handlemanual(char *name)
 
 void
 /* loads manual from given filedescriptor */
-loadmanual(FILE * id)
-{
+loadmanual(FILE *id) {
 	char prevlinechar = 0;
 	/* tmp variable, set after reading first nonempty line of input */
 	int cutheader = 0;
@@ -648,8 +583,7 @@ loadmanual(FILE * id)
 	manual[ManualLines] = xmalloc(1024);
 
 	/* we read until eof */
-	while (!feof(id))
-	{
+	while (!feof(id)) {
 		char *tmp;
 		/*
 		 * it happens sometimes, that the last line is weird
@@ -659,36 +593,30 @@ loadmanual(FILE * id)
 		if (fgets(manual[ManualLines], 1024, id) == NULL)
 			manual[ManualLines][0] = 0;
 
-		if (cutheader)
-		{
-			if (strcmp(manual[cutheader], manual[ManualLines]) == 0)
-			{
+		if (cutheader) {
+			if (strcmp(manual[cutheader], manual[ManualLines]) == 0) {
 				manual[ManualLines][0] = '\n';
 				manual[ManualLines][1] = 0;
 			}
 		}
-		if (FilterB7)
-		{
+		if (FilterB7) {
 			char *filter_pos = index(manual[ManualLines], 0xb7);
 			if (filter_pos)
 				*filter_pos = 'o';
 		}
 		if (CutManHeaders)
-			if (!cutheader)
-			{
-				if (strlen(manual[ManualLines]) > 1)
-				{
+			if (!cutheader) {
+				if (strlen(manual[ManualLines]) > 1) {
 					cutheader = ManualLines;
 				}
 			}
-		if ((CutEmptyManLines) &&((manual[ManualLines][0]) == '\n') &&
-				(prevlinechar == '\n'))
-			;			/* do nothing :)) */
-		else
-		{
+		if ((CutEmptyManLines) && ((manual[ManualLines][0]) == '\n') &&
+			(prevlinechar == '\n'))
+			; /* do nothing :)) */
+		else {
 			int manlinelen = strlen(manual[ManualLines]);
-			manual[ManualLines] = xrealloc(manual[ManualLines],
-					manlinelen + 10);
+			manual[ManualLines] =
+				xrealloc(manual[ManualLines], manlinelen + 10);
 
 			/* temporary variable for determining hypertextuality of fields */
 			tmp = xmalloc(manlinelen + 10);
@@ -711,30 +639,23 @@ loadmanual(FILE * id)
 			 * and realloc manual to add an empty space for
 			 * next entry of manual line
 			 */
-			manual = xrealloc(manual,(ManualLines + 5) * sizeof(char *));
+			manual = xrealloc(manual, (ManualLines + 5) * sizeof(char *));
 			manual[ManualLines] = xmalloc(1024);
 		}
 	}
-
 }
 
-int
-compare_manuallink(const void *a, const void *b)
-{
-	return ((manuallink *) a)->col -((manuallink *) b)->col;
+int compare_manuallink(const void *a, const void *b) {
+	return ((manuallink *)a)->col - ((manuallink *)b)->col;
 }
 
-void
-sort_manuallinks_from_current_line(long startlink, long endlink)
-{
-	qsort(manuallinks + startlink, endlink - startlink, sizeof(manuallink), compare_manuallink);
+void sort_manuallinks_from_current_line(long startlink, long endlink) {
+	qsort(manuallinks + startlink, endlink - startlink, sizeof(manuallink),
+		  compare_manuallink);
 }
-
 
 /* initializes hyperlinks in manual */
-void
-man_initializelinks(char *tmp, int carry)
-{
+void man_initializelinks(char *tmp, int carry) {
 	/* set tmpcnt to the trailing zero of tmp */
 	int tmpcnt = strlen(tmp) + 1;
 	char *mylink = tmp;
@@ -742,14 +663,14 @@ man_initializelinks(char *tmp, int carry)
 	unsigned initialManualLinks = ManualLinks;
 	int i, b;
 	/******************************************************************************
-	 * handle url refrences                                                       *
+	 * handle url refrences *
 	 *****************************************************************************/
 	urlend = tmp;
-	while ((urlstart = strstr(urlend, "http://")) != NULL)
-	{
+	while ((urlstart = strstr(urlend, "http://")) != NULL) {
 		/* always successfull */
 		urlend = findurlend(urlstart);
-		manuallinks = xrealloc(manuallinks, sizeof(manuallink) *(ManualLinks + 3));
+		manuallinks =
+			xrealloc(manuallinks, sizeof(manuallink) * (ManualLinks + 3));
 		manuallinks[ManualLinks].line = ManualLines;
 		manuallinks[ManualLinks].col = width_of_string(tmp, urlstart - tmp);
 		strcpy(manuallinks[ManualLinks].section, "HTTPSECTION");
@@ -764,11 +685,11 @@ man_initializelinks(char *tmp, int carry)
 		ManualLinks++;
 	}
 	urlend = tmp;
-	while ((urlstart = strstr(urlend, "ftp://")) != NULL)
-	{
+	while ((urlstart = strstr(urlend, "ftp://")) != NULL) {
 		/* always successfull */
 		urlend = findurlend(urlstart);
-		manuallinks = xrealloc(manuallinks, sizeof(manuallink) *(ManualLinks + 3));
+		manuallinks =
+			xrealloc(manuallinks, sizeof(manuallink) * (ManualLinks + 3));
 		manuallinks[ManualLinks].line = ManualLines;
 		manuallinks[ManualLinks].col = width_of_string(tmp, urlstart - tmp);
 		strcpy(manuallinks[ManualLinks].section, "FTPSECTION");
@@ -783,11 +704,11 @@ man_initializelinks(char *tmp, int carry)
 		ManualLinks++;
 	}
 	urlend = tmp;
-	while ((urlstart = findemailstart(urlend)) != NULL)
-	{
+	while ((urlstart = findemailstart(urlend)) != NULL) {
 		/* always successfull */
 		urlend = findurlend(urlstart);
-		manuallinks = xrealloc(manuallinks, sizeof(manuallink) *(ManualLinks + 3));
+		manuallinks =
+			xrealloc(manuallinks, sizeof(manuallink) * (ManualLinks + 3));
 		manuallinks[ManualLinks].line = ManualLines;
 		manuallinks[ManualLinks].col = width_of_string(tmp, urlstart - tmp);
 		strcpy(manuallinks[ManualLinks].section, "MAILSECTION");
@@ -805,39 +726,36 @@ man_initializelinks(char *tmp, int carry)
 			ManualLinks++;
 	}
 	/******************************************************************************
-	 * handle normal manual refrences -- reference(section)                       *
+	 * handle normal manual refrences -- reference(section) *
 	 ******************************************************************************/
-	do
-	{
+	do {
 		/* we look for '(', since manual link */
 		mylink = strchr(mylink, '(');
 		/* has form of  'blah(x)' */
-		if (mylink != NULL)
-		{
+		if (mylink != NULL) {
 			char *temp;
 			/* look for the closing bracket */
-			if ((temp = strchr(mylink, ')')))
-			{
+			if ((temp = strchr(mylink, ')'))) {
 				char *p_t1, *p_t;
 				p_t = p_t1 = xmalloc((strlen(mylink) + 10) * sizeof(char));
-				for (++mylink; mylink != temp; *p_t++ = *mylink++);
+				for (++mylink; mylink != temp; *p_t++ = *mylink++)
+					;
 				*p_t = '\0';
-				mylink -=(strlen(p_t1) + sizeof(char));
+				mylink -= (strlen(p_t1) + sizeof(char));
 
-				if ((!strchr(p_t1, '(')) &&(!is_in_manlinks(manlinks, p_t1)))
-				{
+				if ((!strchr(p_t1, '(')) && (!is_in_manlinks(manlinks, p_t1))) {
 					char tempchar;
 					int breakpos, cols_before_link;
 					i = mylink - tmp - 1;
 					if (i < 0)
 						i++;
-					for (; i > 0; --i)
-					{
+					for (; i > 0; --i) {
 						if (!isspace(tmp[i]))
 							/* ignore spaces between linkname and '(x)' */
 							break;
 					}
-					/* we'll put zero on the last non-textual character of link */
+					/* we'll put zero on the last non-textual character of link
+					 */
 					breakpos = i + 1;
 					/* but remember the cleared char for the future */
 					tempchar = tmp[breakpos];
@@ -846,10 +764,8 @@ man_initializelinks(char *tmp, int carry)
 					 * scan to the first space sign or to 0 -- that means go to
 					 * the beginning of the scanned token
 					 */
-					for (i = breakpos; i > 0; --i)
-					{
-						if (isspace(tmp[i]))
-						{
+					for (i = breakpos; i > 0; --i) {
+						if (isspace(tmp[i])) {
 							i++;
 							break;
 						}
@@ -860,48 +776,52 @@ man_initializelinks(char *tmp, int carry)
 					 */
 
 					/* calculate the number of columns in front of the link */
-					cols_before_link = width_of_string(tmp, i-1);
+					cols_before_link = width_of_string(tmp, i - 1);
 
 					/* a small check */
-					if (!((use_apropos) &&(manualhistorylength == 0)))
-					{
+					if (!((use_apropos) && (manualhistorylength == 0))) {
 						/*
 						 * In English: if the name of the link is the name of
 						 * the current page and the section of the link is the
 						 * current section or if we don't know the current
 						 * section, then...
 						 */
-						if ((!strcasecmp(&tmp[i], manualhistory[manualhistorylength].name))
-								&&((!strcasecmp(p_t1, manualhistory[manualhistorylength].sect))
-									||(manualhistory[manualhistorylength].sect[0] == 0)
-									||(!strcmp(manualhistory[manualhistorylength].sect, " "))))
+						if ((!strcasecmp(
+								&tmp[i],
+								manualhistory[manualhistorylength].name)) &&
+							((!strcasecmp(
+								 p_t1,
+								 manualhistory[manualhistorylength].sect)) ||
+							 (manualhistory[manualhistorylength].sect[0] ==
+							  0) ||
+							 (!strcmp(manualhistory[manualhistorylength].sect,
+									  " "))))
 
 							break;
 					}
-					manuallinks = xrealloc(manuallinks, sizeof(manuallink) *(ManualLinks + 3));
+					manuallinks = xrealloc(manuallinks, sizeof(manuallink) *
+															(ManualLinks + 3));
 					manuallinks[ManualLinks].line = ManualLines;
 					manuallinks[ManualLinks].col = cols_before_link + 1;
-					if (LongManualLinks)
-					{
+					if (LongManualLinks) {
 						for (b = 1; mylink[b] != ')'; b++)
-							manuallinks[ManualLinks].section[b - 1] = tolower(mylink[b]);
+							manuallinks[ManualLinks].section[b - 1] =
+								tolower(mylink[b]);
 						manuallinks[ManualLinks].section[b - 1] = 0;
-					}
-					else
-					{
+					} else {
 						manuallinks[ManualLinks].section[0] = mylink[1];
 						manuallinks[ManualLinks].section[1] = 0;
 					}
 					manuallinks[ManualLinks].section_mark = 0;
-					manuallinks[ManualLinks].name = xmalloc((breakpos - i) + 10);
+					manuallinks[ManualLinks].name =
+						xmalloc((breakpos - i) + 10);
 					strcpy(manuallinks[ManualLinks].name, tmp + i);
 					tmp[breakpos] = tempchar;
 
 					/* check whether this is a carry'ed entry(i.e. in the
 					 * previous line there was `-' at end, and this is the
 					 * first word of this line */
-					for (b = i - 1; b >= 0; b--)
-					{
+					for (b = i - 1; b >= 0; b--) {
 						if (b > 0)
 							if (!isspace(tmp[b]))
 								break;
@@ -912,14 +832,13 @@ man_initializelinks(char *tmp, int carry)
 						manuallinks[ManualLinks].carry = carry;
 					/* increase the number of entries */
 					ManualLinks++;
-				}		/*... if (in man links) */
-				xfree((void *) p_t1);
+				} /*... if (in man links) */
+				xfree((void *)p_t1);
 			}
 		}
 		if (mylink)
 			mylink++;
-		if (mylink >(tmp + tmpcnt))
-		{
+		if (mylink > (tmp + tmpcnt)) {
 			break;
 		}
 	}
@@ -930,9 +849,7 @@ man_initializelinks(char *tmp, int carry)
 }
 
 /* viewer function. Handles keyboard actions--main event loop */
-int
-manualwork()
-{
+int manualwork() {
 	/* for user's shell commands */
 	FILE *mypipe;
 	/* a temporary buffer */
@@ -945,8 +862,7 @@ manualwork()
 #ifdef getmaxyx
 	/* if ncurses, get maxx and maxy */
 	getmaxyx(stdscr, maxy, maxx);
-	if ((!getenv("MANWIDTH")) ||(manwidthChanged))
-	{
+	if ((!getenv("MANWIDTH")) || (manwidthChanged)) {
 		/* set MANWIDTH environment variable */
 		static char tmp[24];
 		snprintf(tmp, 24, "MANWIDTH=%d", maxx);
@@ -958,7 +874,6 @@ manualwork()
 	/* otherwise hardcode 80x25... */
 	maxy = 25;
 #endif /* getmaxyx */
-
 
 	/* get manualpos from history.  it is set in handlemanual() */
 	manualpos = manualhistory[manualhistorylength].pos;
@@ -972,15 +887,13 @@ manualwork()
 	erase();
 
 	/* user events loop. finish when key_quit */
-	while (1)
-	{
+	while (1) {
 		/* make getch not wait for user */
 		nodelay(stdscr, TRUE);
 		/* action -- return ERR */
 		key = pinfo_getch();
 		/* if there was nothing in buffer */
-		if (key == ERR)
-		{
+		if (key == ERR) {
 			/* then show screen */
 			if (statusline == FREE)
 				showmanualscreen();
@@ -990,33 +903,30 @@ manualwork()
 		}
 		nodelay(stdscr, FALSE);
 		statusline = FREE;
-		if (winchanged)
-		{
+		if (winchanged) {
 			handlewinch();
 			winchanged = 0;
 			key = pinfo_getch();
 		}
-		/************************ keyboard handling **********************************/
-		if (key > 0)
-		{
-			if ((key == keys.print_1) ||
-					(key == keys.print_2))
-			{
+		/************************ keyboard handling
+		 * **********************************/
+		if (key > 0) {
+			if ((key == keys.print_1) || (key == keys.print_2)) {
 				if (yesno(_("Are you sure you want to print?"), 0))
 					printmanual(manual, ManualLines);
 			}
 			/*====================================================*/
-			if ((key == keys.goto_1) ||
-					(key == keys.goto_2))
-			{
-				manuallinks = xrealloc(manuallinks,(ManualLinks + 1) *(sizeof(manuallink) + 3));
+			if ((key == keys.goto_1) || (key == keys.goto_2)) {
+				manuallinks = xrealloc(
+					manuallinks, (ManualLinks + 1) * (sizeof(manuallink) + 3));
 
 				/* get user's value */
 				attrset(bottomline);
 				move(maxy - 1, 0);
 				echo();
 				curs_set(1);
-				manuallinks[ManualLinks].name = getstring(_("Enter manual name: "));
+				manuallinks[ManualLinks].name =
+					getstring(_("Enter manual name: "));
 				curs_set(0);
 				noecho();
 				move(maxy - 1, 0);
@@ -1038,9 +948,7 @@ manualwork()
 				return ManualLinks - 1;
 			}
 			/*====================================================*/
-			if ((key == keys.goline_1) ||
-					(key == keys.goline_2))
-			{
+			if ((key == keys.goline_1) || (key == keys.goline_2)) {
 				long newpos;
 				/* get user's value */
 				attrset(bottomline);
@@ -1060,23 +968,21 @@ manualwork()
 #endif
 				attrset(normal);
 				/* convert string to long.  careful with nondigit strings.  */
-				if (token)
-				{
+				if (token) {
 					int digit_val = 1;
-					for (unsigned i = 0; token[i] != 0; i++)
-					{
+					for (unsigned i = 0; token[i] != 0; i++) {
 						if (!isdigit(token[i]))
 							digit_val = 0;
 					}
 					/* move cursor position */
-					if (digit_val)
-					{
+					if (digit_val) {
 						newpos = atol(token);
-						newpos -=(maxy - 1);
-						if ((newpos >= 0) && ((unsigned long) newpos < ManualLines - (maxy - 2)))
+						newpos -= (maxy - 1);
+						if ((newpos >= 0) &&
+							((unsigned long)newpos < ManualLines - (maxy - 2)))
 							manualpos = newpos;
 						else if (newpos > 0)
-							manualpos = ManualLines -(maxy - 2);
+							manualpos = ManualLines - (maxy - 2);
 						else
 							manualpos = 0;
 					}
@@ -1085,9 +991,7 @@ manualwork()
 				}
 			}
 			/*=====================================================*/
-			if ((key == keys.shellfeed_1) ||
-					(key == keys.shellfeed_2))
-			{
+			if ((key == keys.shellfeed_1) || (key == keys.shellfeed_2)) {
 				/* get command name */
 				curs_set(1);
 				attrset(bottomline);
@@ -1110,8 +1014,7 @@ manualwork()
 				xsystem("clear");
 				/* open mypipe */
 				mypipe = popen(token, "w");
-				if (mypipe != NULL)
-				{
+				if (mypipe != NULL) {
 					/* and flush the msg to stdin */
 					for (unsigned i = 0; i < ManualLines; i++)
 						fprintf(mypipe, "%s", manual[i]);
@@ -1122,9 +1025,7 @@ manualwork()
 				curs_set(0);
 			}
 			/*=====================================================*/
-			if ((key == keys.refresh_1) ||
-					(key == keys.refresh_2))
-			{
+			if ((key == keys.refresh_1) || (key == keys.refresh_2)) {
 				myendwin();
 				doupdate();
 				refresh();
@@ -1132,9 +1033,7 @@ manualwork()
 			}
 			/*=====================================================*/
 			/* search in current node */
-			if ((key == keys.search_1) ||
-					(key == keys.search_2))
-			{
+			if ((key == keys.search_1) || (key == keys.search_2)) {
 				int success = 0;
 				/* procedure of getting regexp string */
 				move(maxy - 1, 0);
@@ -1145,20 +1044,16 @@ manualwork()
 				 * searchagain handler. see keys.totalsearch at mainfunction.c
 				 * for comments
 				 */
-				if (!searchagain.search)
-				{
+				if (!searchagain.search) {
 					token = getstring(_("Enter regular expression: "));
 					strcpy(searchagain.lastsearch, token);
 					searchagain.type = key;
-				}
-				else
-				{
+				} else {
 					token = xmalloc(strlen(searchagain.lastsearch) + 1);
 					strcpy(token, searchagain.lastsearch);
 					searchagain.search = 0;
-				}		/* end of searchagain handler */
-				if (strlen(token) == 0)
-				{
+				} /* end of searchagain handler */
+				if (strlen(token) == 0) {
 					xfree(token);
 					goto skip_search;
 				}
@@ -1174,8 +1069,7 @@ manualwork()
 #endif
 				attrset(normal);
 				/* compile regexp expression */
-				if (pinfo_re_comp(token) != 0)
-				{
+				if (pinfo_re_comp(token) != 0) {
 					/* We're not in a search! */
 					aftersearch = 0;
 					/* print error message */
@@ -1189,10 +1083,10 @@ manualwork()
 					goto skip_search;
 				}
 				/* and search for it in all subsequential lines */
-				for (unsigned i = manualpos + 1; i < ManualLines - 1; i++)
-				{
+				for (unsigned i = manualpos + 1; i < ManualLines - 1; i++) {
 					char *tmp;
-					tmp = xmalloc(strlen(manual[i]) + strlen(manual[i + 1]) + 10);
+					tmp =
+						xmalloc(strlen(manual[i]) + strlen(manual[i + 1]) + 10);
 					/*
 					 * glue two following lines together, to find expres- sions
 					 * split up into two lines
@@ -1202,8 +1096,7 @@ manualwork()
 					strip_manual(tmp);
 
 					/* execute search */
-					if (pinfo_re_exec(tmp))
-					{		/* if found, enter here... */
+					if (pinfo_re_exec(tmp)) { /* if found, enter here... */
 						success = 1;
 						strcpy(tmp, manual[i + 1]);
 						strip_manual(tmp);
@@ -1222,8 +1115,7 @@ manualwork()
 				}
 				xfree(token);
 				rescan_selected();
-				if (!success)
-				{
+				if (!success) {
 					attrset(bottomline);
 					mvaddstr(maxy - 1, 0, _("Search string not found..."));
 					statusline = LOCKED;
@@ -1234,42 +1126,33 @@ manualwork()
 			/*=====================================================*/
 			/* search again */
 			/* see mainfunction.c for comments */
-			if ((key == keys.search_again_1) ||
-					(key == keys.search_again_2))
-			{
-				if (searchagain.type != 0)
-				{
+			if ((key == keys.search_again_1) || (key == keys.search_again_2)) {
+				if (searchagain.type != 0) {
 					searchagain.search = 1;
 					ungetch(searchagain.type);
 				}
 			}
-skip_search:
+		skip_search:
 			/*=====================================================*/
-			if ((key == keys.twoup_1) ||
-					(key == keys.twoup_2))
-			{
+			if ((key == keys.twoup_1) || (key == keys.twoup_2)) {
 				ungetch(keys.up_1);
 				ungetch(keys.up_1);
 			}
 			/*=====================================================*/
-			if ((key == keys.up_1) ||
-					(key == keys.up_2))
-			{
+			if ((key == keys.up_1) || (key == keys.up_2)) {
 				selectedchanged = 0;
 				/* if there are links at all */
-				if (selected != -1)
-				{
+				if (selected != -1) {
 					/* if one is selected */
 					if (selected > 0)
 						/*
 						 * scan for a next visible one, which is above the
 						 * current.
 						 */
-						for (int i = selected - 1; i >= 0; i--)
-						{
+						for (int i = selected - 1; i >= 0; i--) {
 							if ((manuallinks[i].line >= manualpos) &&
-									(manuallinks[i].line < manualpos +(maxy - 1)))
-							{
+								(manuallinks[i].line <
+								 manualpos + (maxy - 1))) {
 								selected = i;
 								selectedchanged = 1;
 								break;
@@ -1277,16 +1160,13 @@ skip_search:
 						}
 				}
 				/* if new link not found */
-				if (!selectedchanged)
-				{
+				if (!selectedchanged) {
 					/* move one position up */
 					if (manualpos >= 1)
 						manualpos--;
 					/* and scan for selected again :) */
-					for (unsigned i = 0; i < ManualLinks; i++)
-					{
-						if (manuallinks[i].line == manualpos)
-						{
+					for (unsigned i = 0; i < ManualLinks; i++) {
+						if (manuallinks[i].line == manualpos) {
 							selected = i;
 							break;
 						}
@@ -1294,73 +1174,54 @@ skip_search:
 				}
 			}
 			/*=====================================================*/
-			if ((key == keys.end_1) ||
-					(key == keys.end_2))
-			{
+			if ((key == keys.end_1) || (key == keys.end_2)) {
 				if (ManualLines < maxy - 1)
 					manualpos = 0;
 				else
-					manualpos = ManualLines -(maxy - 1);
+					manualpos = ManualLines - (maxy - 1);
 
 				selected = ManualLinks - 1;
 			}
 			/*=====================================================*/
-			if ((key == keys.nextnode_1) ||
-					(key == keys.nextnode_2))
-			{
-				for (unsigned i = manualpos + 1; i < ManualLines; i++)
-				{
-					if (manual[i][1] == 8)
-					{
+			if ((key == keys.nextnode_1) || (key == keys.nextnode_2)) {
+				for (unsigned i = manualpos + 1; i < ManualLines; i++) {
+					if (manual[i][1] == 8) {
 						manualpos = i;
 						break;
 					}
 				}
 			}
 			/*=====================================================*/
-			if ((key == keys.prevnode_1) ||
-					(key == keys.prevnode_2))
-			{
-				for (unsigned i = manualpos - 1; i > 0; i--)
-				{
-					if (manual[i][1] == 8)
-					{
+			if ((key == keys.prevnode_1) || (key == keys.prevnode_2)) {
+				for (unsigned i = manualpos - 1; i > 0; i--) {
+					if (manual[i][1] == 8) {
 						manualpos = i;
 						break;
 					}
 				}
 			}
 			/*=====================================================*/
-			if ((key == keys.pgdn_1) ||
-					(key == keys.pgdn_2))
-			{
-				if (manualpos +(maxy - 2) < ManualLines -(maxy - 1))
-				{
-					manualpos +=(maxy - 2);
+			if ((key == keys.pgdn_1) || (key == keys.pgdn_2)) {
+				if (manualpos + (maxy - 2) < ManualLines - (maxy - 1)) {
+					manualpos += (maxy - 2);
 					rescan_selected();
-				}
-				else if (ManualLines -(maxy - 1) >= 1)
-				{
-					manualpos = ManualLines -(maxy - 1);
+				} else if (ManualLines - (maxy - 1) >= 1) {
+					manualpos = ManualLines - (maxy - 1);
 					selected = ManualLinks - 1;
-				}
-				else
-				{
+				} else {
 					manualpos = 0;
 					selected = ManualLinks - 1;
 				}
 			}
 			/*=====================================================*/
-			if ((key == keys.home_1) || (key == keys.home_2))
-			{
+			if ((key == keys.home_1) || (key == keys.home_2)) {
 				manualpos = 0;
 				rescan_selected();
 			}
 			/*=====================================================*/
-			if ((key == keys.pgup_1) | (key == keys.pgup_2))
-			{
-				if (manualpos >(maxy - 1))
-					manualpos -=(maxy - 1);
+			if ((key == keys.pgup_1) | (key == keys.pgup_2)) {
+				if (manualpos > (maxy - 1))
+					manualpos -= (maxy - 1);
 				else
 					manualpos = 0;
 				rescan_selected();
@@ -1368,36 +1229,29 @@ skip_search:
 			/*=====================================================*/
 			/* top+bottom line \|/ */
 			/* see keys.up for comments */
-			if ((key == keys.twodown_1) || (key == keys.twodown_2))
-			{
+			if ((key == keys.twodown_1) || (key == keys.twodown_2)) {
 				ungetch(keys.down_1);
 				ungetch(keys.down_1);
 			}
 			/*=====================================================*/
 			/* top+bottom line \|/ */
 			/* see keys.up for comments */
-			if ((key == keys.down_1) || (key == keys.down_2))
-			{
+			if ((key == keys.down_1) || (key == keys.down_2)) {
 				selectedchanged = 0;
-				for (unsigned i = selected + 1; i < ManualLinks; i++)
-				{
+				for (unsigned i = selected + 1; i < ManualLinks; i++) {
 					if ((manuallinks[i].line >= manualpos) &&
-							(manuallinks[i].line < manualpos +(maxy - 2)))
-					{
+						(manuallinks[i].line < manualpos + (maxy - 2))) {
 						selected = i;
 						selectedchanged = 1;
 						break;
 					}
 				}
-				if (!selectedchanged)
-				{
-					if (manualpos < ManualLines -(maxy - 1))
+				if (!selectedchanged) {
+					if (manualpos < ManualLines - (maxy - 1))
 						manualpos++;
-					for (unsigned i = selected + 1; i < ManualLinks; i++)
-					{
+					for (unsigned i = selected + 1; i < ManualLinks; i++) {
 						if ((manuallinks[i].line >= manualpos) &&
-								(manuallinks[i].line < manualpos +(maxy - 2)))
-						{
+							(manuallinks[i].line < manualpos + (maxy - 2))) {
 							selected = i;
 							selectedchanged = 1;
 							break;
@@ -1406,24 +1260,19 @@ skip_search:
 				}
 			}
 			/*=====================================================*/
-			if ((key == keys.back_1) ||
-					(key == keys.back_2))
-			{
+			if ((key == keys.back_1) || (key == keys.back_2)) {
 				if (manualhistorylength)
 					return -2;
 			}
 			/*=====================================================*/
-			if ((key == keys.followlink_1) ||
-					(key == keys.followlink_2))
-			{
+			if ((key == keys.followlink_1) || (key == keys.followlink_2)) {
 				manualhistory[manualhistorylength].pos = manualpos;
 				manualhistory[manualhistorylength].selected = selected;
 				if (selected >= 0)
 					if ((manuallinks[selected].line >= manualpos) &&
-							(manuallinks[selected].line < manualpos +(maxy - 1)))
-					{
-						if (!strncmp(manuallinks[selected].section, "HTTPSECTION", 11))
-						{
+						(manuallinks[selected].line < manualpos + (maxy - 1))) {
+						if (!strncmp(manuallinks[selected].section,
+									 "HTTPSECTION", 11)) {
 							int buflen;
 							char *tempbuf = xmalloc(1024);
 							strcpy(tempbuf, httpviewer);
@@ -1434,9 +1283,8 @@ skip_search:
 							xsystem(tempbuf);
 							doupdate();
 							xfree(tempbuf);
-						}
-						else if (!strncmp(manuallinks[selected].section, "FTPSECTION", 10))
-						{
+						} else if (!strncmp(manuallinks[selected].section,
+											"FTPSECTION", 10)) {
 							int buflen;
 							char *tempbuf = xmalloc(1024);
 							strcpy(tempbuf, ftpviewer);
@@ -1447,9 +1295,8 @@ skip_search:
 							xsystem(tempbuf);
 							doupdate();
 							xfree(tempbuf);
-						}
-						else if (!strncmp(manuallinks[selected].section, "MAILSECTION", 11))
-						{
+						} else if (!strncmp(manuallinks[selected].section,
+											"MAILSECTION", 11)) {
 							int buflen;
 							char *tempbuf = xmalloc(1024);
 							strcpy(tempbuf, maileditor);
@@ -1460,46 +1307,44 @@ skip_search:
 							xsystem(tempbuf);
 							doupdate();
 							xfree(tempbuf);
-						}
-						else
-						{
+						} else {
 							return selected;
 						}
 					}
 			}
 			/*=====================================================*/
-			if ((key==keys.left_1)||(key==keys.left_2))
-				if (manualcol>0) manualcol--;
-			if ((key==keys.right_1)||(key==keys.right_2))
+			if ((key == keys.left_1) || (key == keys.left_2))
+				if (manualcol > 0)
+					manualcol--;
+			if ((key == keys.right_1) || (key == keys.right_2))
 				manualcol++;
-			/*=====================================================*/
-			/********* end of keyboard handling *********************/
-			/********* mouse handler ********************************/
+				/*=====================================================*/
+				/********* end of keyboard handling *********************/
+				/********* mouse handler ********************************/
 #ifdef CURSES_MOUSE
-			if (key == KEY_MOUSE)
-			{
+			if (key == KEY_MOUSE) {
 				MEVENT mouse;
 				int done = 0;
 				getmouse(&mouse);
-				if (mouse.x<0 || mouse.y<0) /* should never happen, according to curses docs */
+				if (mouse.x < 0 ||
+					mouse.y <
+						0) /* should never happen, according to curses docs */
 					continue;
 
-				/* copy to unsigned vars to avoid all kinds of signed/unsigned comparison unpleasantness below */
+				/* copy to unsigned vars to avoid all kinds of signed/unsigned
+				 * comparison unpleasantness below */
 				unsigned mouse_x = mouse.x;
 				unsigned mouse_y = mouse.x;
 
-				if (mouse.bstate == BUTTON1_CLICKED)
-				{
-					if ((mouse_y > 0) &&(mouse_y < maxy - 1))
-					{
-						for (int i = selected; i >= 0; i--)
-						{
-							if (manuallinks[i].line == mouse_y + manualpos - 1)
-							{
-								if (manuallinks[i].col <= mouse_x - 1)
-								{
-									if (manuallinks[i].col + strlen(manuallinks[i].name) >= mouse_x - 1)
-									{
+				if (mouse.bstate == BUTTON1_CLICKED) {
+					if ((mouse_y > 0) && (mouse_y < maxy - 1)) {
+						for (int i = selected; i >= 0; i--) {
+							if (manuallinks[i].line ==
+								mouse_y + manualpos - 1) {
+								if (manuallinks[i].col <= mouse_x - 1) {
+									if (manuallinks[i].col +
+											strlen(manuallinks[i].name) >=
+										mouse_x - 1) {
 										selected = i;
 										done = 1;
 										break;
@@ -1508,14 +1353,13 @@ skip_search:
 							}
 						}
 						if (!done)
-							for (unsigned i = selected; i < ManualLinks; i++)
-							{
-								if (manuallinks[i].line == mouse_y + manualpos - 1)
-								{
-									if (manuallinks[i].col <= mouse_x - 1)
-									{
-										if (manuallinks[i].col + strlen(manuallinks[i].name) >= mouse_x - 1)
-										{
+							for (unsigned i = selected; i < ManualLinks; i++) {
+								if (manuallinks[i].line ==
+									mouse_y + manualpos - 1) {
+									if (manuallinks[i].col <= mouse_x - 1) {
+										if (manuallinks[i].col +
+												strlen(manuallinks[i].name) >=
+											mouse_x - 1) {
 											selected = i;
 											done = 1;
 											break;
@@ -1523,24 +1367,21 @@ skip_search:
 									}
 								}
 							}
-					}		/* end: mouse not on top/bottom line */
+					} /* end: mouse not on top/bottom line */
 					if (mouse_y == 0)
 						ungetch(keys.up_1);
 					if (mouse_y == maxy - 1)
 						ungetch(keys.down_1);
-				}		/* end: button_clicked */
-				if (mouse.bstate == BUTTON1_DOUBLE_CLICKED)
-				{
-					if ((mouse_y > 0) &&(mouse_y < maxy - 1))
-					{
-						for (int i = selected; i >= 0; i--)
-						{
-							if (manuallinks[i].line == mouse_y + manualpos - 1)
-							{
-								if (manuallinks[i].col <= mouse_x - 1)
-								{
-									if (manuallinks[i].col + strlen(manuallinks[i].name) >= mouse_x - 1)
-									{
+				} /* end: button_clicked */
+				if (mouse.bstate == BUTTON1_DOUBLE_CLICKED) {
+					if ((mouse_y > 0) && (mouse_y < maxy - 1)) {
+						for (int i = selected; i >= 0; i--) {
+							if (manuallinks[i].line ==
+								mouse_y + manualpos - 1) {
+								if (manuallinks[i].col <= mouse_x - 1) {
+									if (manuallinks[i].col +
+											strlen(manuallinks[i].name) >=
+										mouse_x - 1) {
 										selected = i;
 										done = 1;
 										break;
@@ -1549,14 +1390,13 @@ skip_search:
 							}
 						}
 						if (!done)
-							for (unsigned i = selected; i < ManualLinks; i++)
-							{
-								if (manuallinks[i].line == mouse_y + manualpos - 1)
-								{
-									if (manuallinks[i].col <= mouse_x - 1)
-									{
-										if (manuallinks[i].col + strlen(manuallinks[i].name) >= mouse_x - 1)
-										{
+							for (unsigned i = selected; i < ManualLinks; i++) {
+								if (manuallinks[i].line ==
+									mouse_y + manualpos - 1) {
+									if (manuallinks[i].col <= mouse_x - 1) {
+										if (manuallinks[i].col +
+												strlen(manuallinks[i].name) >=
+											mouse_x - 1) {
 											selected = i;
 											done = 1;
 											break;
@@ -1566,23 +1406,22 @@ skip_search:
 							}
 						if (done)
 							ungetch(keys.followlink_1);
-					}		/* end: mouse not at top/bottom line */
+					} /* end: mouse not at top/bottom line */
 					if (mouse_y == 0)
 						ungetch(keys.pgup_1);
 					if (mouse_y == maxy - 1)
 						ungetch(keys.pgdn_1);
-				}		/* end: button doubleclicked */
+				} /* end: button doubleclicked */
 			}
 #endif /* CURSES_MOUSE */
 			/*****************************************************************************/
 		}
-		if ((key == keys.quit_2) ||(key == keys.quit_1))
-		{
+		if ((key == keys.quit_2) || (key == keys.quit_1)) {
 			if (!ConfirmQuit)
 				break;
-			else
-			{
-				if (yesno(_("Are you sure you want to quit?"), QuitConfirmDefault))
+			else {
+				if (yesno(_("Are you sure you want to quit?"),
+						  QuitConfirmDefault))
 					break;
 			}
 		}
@@ -1593,13 +1432,10 @@ skip_search:
 
 void
 /* scan for some hyperlink, available on current screen */
-rescan_selected()
-{
-	for (unsigned i = 0; i < ManualLinks; i++)
-	{
+rescan_selected() {
+	for (unsigned i = 0; i < ManualLinks; i++) {
 		if ((manuallinks[i].line >= manualpos) &&
-				(manuallinks[i].line < manualpos +(maxy - 1)))
-		{
+			(manuallinks[i].line < manualpos + (maxy - 1))) {
 			selected = i;
 			break;
 		}
@@ -1611,33 +1447,37 @@ rescan_selected()
  * columns. But remember, that *man contains also nonprinteble characters for
  * boldface etc.
  */
-char *getmancolumn(char *man, int mancol)
-{
-	if (mancol==0) return man;
-	while (mancol>0)
-	{ if (*(man+1) == 8) man+=3; else man++; mancol--; }
+char *getmancolumn(char *man, int mancol) {
+	if (mancol == 0)
+		return man;
+	while (mancol > 0) {
+		if (*(man + 1) == 8)
+			man += 3;
+		else
+			man++;
+		mancol--;
+	}
 	return man;
 }
 
 /* show the currently visible part of manpage */
-void
-showmanualscreen()
-{
+void showmanualscreen() {
 #ifdef getmaxyx
 	/* refresh maxy, maxx values */
 	getmaxyx(stdscr, maxy, maxx);
 #endif
 	attrset(normal);
 	/* print all visible text lines */
-	for (unsigned i = manualpos;(i < manualpos +(maxy - 2)) &&(i < ManualLines); i++)
-	{
+	for (unsigned i = manualpos;
+		 (i < manualpos + (maxy - 2)) && (i < ManualLines); i++) {
 		size_t len = strlen(manual[i]);
 		if (len)
 			manual[i][len - 1] = ' ';
 		/* if we have something to display */
-		if (len>manualcol)
-			mvaddstr_manual((i - manualpos) + 1, 0, getmancolumn(manual[i],manualcol));
-		else	/* otherwise, just clear the line to eol */
+		if (len > manualcol)
+			mvaddstr_manual((i - manualpos) + 1, 0,
+							getmancolumn(manual[i], manualcol));
+		else /* otherwise, just clear the line to eol */
 		{
 			move((i - manualpos) + 1, 0);
 			bkgdset(' ' | normal);
@@ -1662,8 +1502,9 @@ showmanualscreen()
 	mymvhline(0, 0, ' ', maxx);
 	mymvhline(maxy - 1, 0, ' ', maxx);
 	move(maxy - 1, 0);
-	if (((manualpos + maxy) < ManualLines) &&(ManualLines > maxy - 2))
-		printw(_("Viewing line %d/%d, %d%%"),(manualpos - 1 + maxy), ManualLines,((manualpos - 1 + maxy) * 100) / ManualLines);
+	if (((manualpos + maxy) < ManualLines) && (ManualLines > maxy - 2))
+		printw(_("Viewing line %d/%d, %d%%"), (manualpos - 1 + maxy),
+			   ManualLines, ((manualpos - 1 + maxy) * 100) / ManualLines);
 	else
 		printw(_("Viewing line %d/%d, 100%%"), ManualLines, ManualLines);
 	move(maxy - 1, 0);
@@ -1672,23 +1513,18 @@ showmanualscreen()
 
 void
 /* print a manual line */
-mvaddstr_manual(int y, int x, char *str)
-{
+mvaddstr_manual(int y, int x, char *str) {
 	int i, j, len = strlen(str);
 	static char strippedline[1024];
-	if ((h_regexp_num) ||(manual_aftersearch))
-	{
+	if ((h_regexp_num) || (manual_aftersearch)) {
 		memcpy(strippedline, str, len + 1);
 		strip_manual(strippedline);
 	}
 	move(y, x);
-	for (i = 0; i < len; i++)
-	{
-		if ((i > 0) &&(i < len - 1))
-		{
+	for (i = 0; i < len; i++) {
+		if ((i > 0) && (i < len - 1)) {
 			/* handle bold highlight */
-			if ((str[i] == 8) &&(str[i - 1] == '_'))
-			{
+			if ((str[i] == 8) && (str[i - 1] == '_')) {
 				attrset(manualbold);
 				addch(str[i] & 0xff);
 				addch(str[i + 1] & 0xff);
@@ -1709,22 +1545,18 @@ mvaddstr_manual(int y, int x, char *str)
 			}
 		}
 		/* italic highlight */
-		if (i < len - 3)
-		{
-label_check_italic:
-			if ((str[i + 1] == 8) &&(str[i + 2] == str[i]))
-			{
+		if (i < len - 3) {
+		label_check_italic:
+			if ((str[i + 1] == 8) && (str[i + 2] == str[i])) {
 				attrset(manualitalic);
 				addch(str[i] & 0xff);
 				i += 2;
 				attrset(normal);
-			}
-			else
-			{
+			} else {
 				addch(str[i] & 0xff);
 			}
 		}
-label_skip_other:;
+	label_skip_other:;
 	}
 #ifdef HAVE_DECL_BKGDSET
 	bkgdset(' ' | normal);
@@ -1735,18 +1567,15 @@ label_skip_other:;
 #endif
 	attrset(normal);
 #ifndef ___DONT_USE_REGEXP_SEARCH___
-	if ((h_regexp_num) ||(manual_aftersearch))
-	{
+	if ((h_regexp_num) || (manual_aftersearch)) {
 		regmatch_t pmatch[1];
 		int maxregexp = manual_aftersearch ? h_regexp_num + 1 : h_regexp_num;
 
 		/* if it is after search, then we have user defined regexps+
 		   a searched regexp to highlight */
-		for (j = 0; j < maxregexp; j++)
-		{
+		for (j = 0; j < maxregexp; j++) {
 			char *tmpstr = strippedline;
-			while (!regexec(&h_regexp[j], tmpstr, 1, pmatch, 0))
-			{
+			while (!regexec(&h_regexp[j], tmpstr, 1, pmatch, 0)) {
 				int n = pmatch[0].rm_eo - pmatch[0].rm_so;
 				int rx = pmatch[0].rm_so + tmpstr - strippedline;
 				int curY, curX;
@@ -1767,28 +1596,22 @@ label_skip_other:;
 }
 
 /* add hyperobject highlights */
-void
-add_highlights()
-{
+void add_highlights() {
 	int i;
 	/* scan through the visible objects */
-	for (i = 0; (unsigned) i < ManualLinks; i++)
-	{
+	for (i = 0; (unsigned)i < ManualLinks; i++) {
 		/* if the object is on the current screen */
 		if ((manuallinks[i].line >= manualpos) &&
-				(manuallinks[i].line < manualpos +(maxy - 2)))
-		{
+			(manuallinks[i].line < manualpos + (maxy - 2))) {
 			/* if it's a simple man link */
-			if (manuallinks[i].section_mark < HTTPSECTION)
-			{
+			if (manuallinks[i].section_mark < HTTPSECTION) {
 				if (i == selected)
 					attrset(noteselected);
 				else
 					attrset(note);
 
 				/* if it's a link split into two lines */
-				if (manuallinks[i].carry == 1)
-				{
+				if (manuallinks[i].carry == 1) {
 					int x, y, ltline = manuallinks[i].line - 1;
 					/* find the line, where starts the split link */
 					char *tmpstr = strdup(manual[ltline]);
@@ -1798,11 +1621,11 @@ add_highlights()
 					strip_manual(tmpstr);
 					/* calculate the length of this line */
 					ltlinelen = strlen(tmpstr);
-					/* set this var to the last character of this line(to an '\n')*/
+					/* set this var to the last character of this line(to an
+					 * '\n')*/
 					newlinemark = tmpstr + ltlinelen - 1;
 					getyx(stdscr, y, x);
-					if (y > 2)
-					{
+					if (y > 2) {
 #define TestCh tmpstr[ltlinelen]
 						/* skip \n, -, and the at least one char... */
 						if (ltlinelen > 2)
@@ -1812,21 +1635,23 @@ add_highlights()
 						 * positon ltlinelen to the beginning of the link to be
 						 * highlighted
 						 */
-						while ((isalpha(TestCh)) ||(TestCh == '.') ||(TestCh == '_'))
+						while ((isalpha(TestCh)) || (TestCh == '.') ||
+							   (TestCh == '_'))
 							ltlinelen--;
 
 						*newlinemark = 0;
 						/* OK, link horizontally fits into screen */
-						if (ltlinelen>manualcol)
+						if (ltlinelen > manualcol)
 							mvaddstr(manuallinks[i].line - manualpos + 1 - 1,
-									ltlinelen-manualcol, &tmpstr[ltlinelen]);
+									 ltlinelen - manualcol, &tmpstr[ltlinelen]);
 						/*
 						 * we cut here a part of the link, and draw only what's
 						 * visible on screen
 						 */
-						else if (ltlinelen+strlen(&tmpstr[ltlinelen])>manualcol)
+						else if (ltlinelen + strlen(&tmpstr[ltlinelen]) >
+								 manualcol)
 							mvaddstr(manuallinks[i].line - manualpos + 1 - 1,
-									ltlinelen-manualcol, &tmpstr[manualcol]);
+									 ltlinelen - manualcol, &tmpstr[manualcol]);
 
 						*newlinemark = '\n';
 #undef TestCh
@@ -1834,15 +1659,12 @@ add_highlights()
 					xfree(tmpstr);
 					move(y, x);
 				}
-			}
-			else
-			{
+			} else {
 				if (i == selected)
 					attrset(urlselected);
 				else
 					attrset(url);
-				if (manuallinks[i].carry == 1)
-				{
+				if (manuallinks[i].carry == 1) {
 					int ltline = manuallinks[i].line + 1;
 					/*
 					 * the split part to find is lying down
@@ -1856,49 +1678,50 @@ add_highlights()
 					while (isspace(tmpstr[k]))
 						k++;
 					/* find the end of url */
-					wskend = findurlend(tmpstr+k);
-					if (wskend<tmpstr) abort(); /* TODO: crude check, but this should never occur anyway */
+					wskend = findurlend(tmpstr + k);
+					if (wskend < tmpstr)
+						abort(); /* TODO: crude check, but this should never
+									occur anyway */
 
 					/* add end of string, and print */
 					*wskend = 0;
-					if (k<manualcol)
-						mvaddstr(manuallinks[i].line - manualpos + 2, k - manualcol, tmpstr+k);
-					else if ((uint64_t) (wskend-tmpstr)<manualcol) /* should be safe see check above */
-						mvaddstr(manuallinks[i].line - manualpos + 2, 0, tmpstr+k+manualcol);
+					if (k < manualcol)
+						mvaddstr(manuallinks[i].line - manualpos + 2,
+								 k - manualcol, tmpstr + k);
+					else if ((uint64_t)(wskend - tmpstr) <
+							 manualcol) /* should be safe see check above */
+						mvaddstr(manuallinks[i].line - manualpos + 2, 0,
+								 tmpstr + k + manualcol);
 				}
 			}
-			if (manuallinks[i].col>manualcol)
+			if (manuallinks[i].col > manualcol)
 				mvaddstr(1 + manuallinks[i].line - manualpos,
-						manuallinks[i].col - manualcol, manuallinks[i].name);
-			else if (manuallinks[i].col+strlen(manuallinks[i].name)>manualcol)
+						 manuallinks[i].col - manualcol, manuallinks[i].name);
+			else if (manuallinks[i].col + strlen(manuallinks[i].name) >
+					 manualcol)
 				mvaddstr(1 + manuallinks[i].line - manualpos, 0,
-						manuallinks[i].name+(manualcol-manuallinks[i].col));
+						 manuallinks[i].name +
+							 (manualcol - manuallinks[i].col));
 			attrset(normal);
 		}
 	}
 }
 
 /* all variables passed here must have, say 10 bytes of overrun buffer */
-void
-strip_manual(char *buf)
-{
+void strip_manual(char *buf) {
 	int i, tmpcnt = 0;
 	/* in general, tmp buffer will hold a line stripped from highlight marks */
-	for (i = 0; buf[i] != 0; i++)
-	{
+	for (i = 0; buf[i] != 0; i++) {
 		/* so we strip the line from "'_',0x8" -- bold marks */
-		if ((buf[i] == '_') &&(buf[i + 1] == 8))
-		{
+		if ((buf[i] == '_') && (buf[i + 1] == 8)) {
 			buf[tmpcnt++] = buf[i + 2];
 			i += 2;
 		}
 		/* and 0x8 -- italic marks */
-		else if ((buf[i + 1] == 8) &&(buf[i + 2] == buf[i]))
-		{
+		else if ((buf[i + 1] == 8) && (buf[i + 2] == buf[i])) {
 			buf[tmpcnt++] = buf[i];
 			i += 2;
-		}
-		else /* else we don't do anything */
+		} else /* else we don't do anything */
 			buf[tmpcnt++] = buf[i];
 	}
 	buf[tmpcnt] = 0;
@@ -1908,40 +1731,32 @@ strip_manual(char *buf)
  * checks if a construction, which looks like hyperlink, belongs to the allowed
  * manual sections.
  */
-int
-is_in_manlinks(char *in, char *find)
-{
+int is_in_manlinks(char *in, char *find) {
 	char *copy, *token;
 	const char delimiters[] = ":";
 
 	copy = strdup(in);
-	if ((strcmp(find,(token = strtok(copy, delimiters))) != 0))
-	{
-		while ((token = strtok(NULL, delimiters)))
-		{
+	if ((strcmp(find, (token = strtok(copy, delimiters))) != 0)) {
+		while ((token = strtok(NULL, delimiters))) {
 #ifdef HAVE_STRCASECMP
 			if (!strcasecmp(token, find))
 #else
-				if (!strcmp(token, find))
+			if (!strcmp(token, find))
 #endif
-				{
-					xfree((void *) copy);
-					return 0;
-				}
+			{
+				xfree((void *)copy);
+				return 0;
+			}
 		}
-		xfree((void *) copy);
+		xfree((void *)copy);
 		return 1;
-	}
-	else
-	{
-		xfree((void *) copy);
+	} else {
+		xfree((void *)copy);
 		return 0;
 	}
 }
 
-void
-printmanual(char **Message, long Lines)
-{
+void printmanual(char **Message, long Lines) {
 	/* printer fd */
 	FILE *prnFD;
 	int i;
@@ -1949,17 +1764,14 @@ printmanual(char **Message, long Lines)
 	prnFD = popen(printutility, "w");
 
 	/* scan through all lines */
-	for (i = 0; i < Lines; i++)
-	{
+	for (i = 0; i < Lines; i++) {
 		fprintf(prnFD, "\r%s", Message[i]);
 	}
 	pclose(prnFD);
 }
 
-int
-ishyphen(unsigned char ch)
-{
-	if ((ch == '-') ||(ch == SOFT_HYPHEN))
+int ishyphen(unsigned char ch) {
+	if ((ch == '-') || (ch == SOFT_HYPHEN))
 		return 1;
 	return 0;
 }

@@ -20,12 +20,10 @@
  ***************************************************************************/
 #include "common_includes.h"
 
-#include <termios.h>
 #include <sys/ioctl.h>
+#include <termios.h>
 
-void
-handle_crash(int signum)
-{
+void handle_crash(int signum) {
 	closeprogram();
 	fprintf(stderr, "Caught signal %d, bye!\n", signum);
 	if (signum == SIGSEGV)
@@ -33,17 +31,13 @@ handle_crash(int signum)
 	exit(1);
 }
 
-void
-handle_window_resize(int UNUSED(signum))
-{
+void handle_window_resize(int UNUSED(signum)) {
 	winchanged = 1;
 	ungetch(keys.refresh_1);
 	signal(SIGWINCH, handle_window_resize);
 }
 
-void
-handle_suspend(int UNUSED(signum))
-{
+void handle_suspend(int UNUSED(signum)) {
 	if (!isendwin()) {
 		curs_set(1);
 		endwin();
@@ -53,9 +47,7 @@ handle_suspend(int UNUSED(signum))
 	kill(0, SIGSTOP);
 }
 
-void
-handle_resume(int UNUSED(signum))
-{
+void handle_resume(int UNUSED(signum)) {
 	if (isendwin()) {
 		refresh();
 		curs_set(0);
@@ -64,17 +56,15 @@ handle_resume(int UNUSED(signum))
 	signal(SIGCONT, handle_resume);
 }
 
-void
-signal_handler()
-{
+void signal_handler() {
 	sigset_t sigs;
-	
-	signal(SIGINT, handle_crash);	/* handle ^C */
-	signal(SIGTERM, handle_crash);	/* handle soft kill */
-	signal(SIGSEGV, handle_crash);	/* handle seg. fault */
-	signal(SIGHUP, handle_crash);	/* handle hup signal */
-	signal(SIGTSTP, handle_suspend);/* handle terminal suspend */
-	signal(SIGCONT, handle_resume);	/* handle back from suspend */
+
+	signal(SIGINT, handle_crash);	 /* handle ^C */
+	signal(SIGTERM, handle_crash);	 /* handle soft kill */
+	signal(SIGSEGV, handle_crash);	 /* handle seg. fault */
+	signal(SIGHUP, handle_crash);	 /* handle hup signal */
+	signal(SIGTSTP, handle_suspend); /* handle terminal suspend */
+	signal(SIGCONT, handle_resume);	 /* handle back from suspend */
 #ifdef SIGWINCH
 	signal(SIGWINCH, handle_window_resize);
 #endif

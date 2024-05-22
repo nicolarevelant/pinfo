@@ -23,6 +23,6 @@
 #define PRINTINFO_H
 
 /* prints node, pointed by `message', of `lines' length.  */
-void printnode (char ***message, unsigned long *lines);
+void printnode(char ***message, unsigned long *lines);
 
 #endif

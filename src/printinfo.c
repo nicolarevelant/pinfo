@@ -26,11 +26,9 @@
  * and we draw the base line. Thus highlights are printed `twice', and
  * are darker than the rest :)
  */
-void
-printnode(char ***message, unsigned long *lines)
-{
-#define Message	(*message)
-#define Lines	(*lines)
+void printnode(char ***message, unsigned long *lines) {
+#define Message (*message)
+#define Lines (*lines)
 
 	/* counter, to point at what highlights are already * handled */
 	unsigned highlight = 0;
@@ -42,8 +40,7 @@ printnode(char ***message, unsigned long *lines)
 	prnFD = popen(printutility, "w");
 
 	/* scan through all lines */
-	for (unsigned i = 1; i < Lines; i++)
-	{
+	for (unsigned i = 1; i < Lines; i++) {
 		/*
 		 * this says, where the printer's head is
 		 * right now.(offset in cols from the
@@ -53,37 +50,31 @@ printnode(char ***message, unsigned long *lines)
 		/*
 		 * let's handle the highlights, which belong to our(i'th) line.
 		 */
-		while (hyperobjects[highlight].line <= i)
-		{
+		while (hyperobjects[highlight].line <= i) {
 			/* build a complete highlighted text */
 			if (hyperobjects[highlight].file[0] == 0)
 				strcpy(buf, hyperobjects[highlight].node);
-			else
-			{
+			else {
 				strcpy(buf, "(");
 				strcat(buf, hyperobjects[highlight].file);
 				strcat(buf, ")");
 				strcat(buf, hyperobjects[highlight].node);
 			}
 			/* if it's a contiunuation of last's line highlight */
-			if (hyperobjects[highlight].line == i - 1)
-			{
+			if (hyperobjects[highlight].line == i - 1) {
 				int length = 1;
 				if (hyperobjects[highlight].breakpos == -1)
-					length = strlen(buf) -
-						hyperobjects[highlight].breakpos;
-				fprintf(prnFD, "%s", buf + length -
-						hyperobjects[highlight].breakpos);
-				lineprinted += strlen(buf + length -
-						hyperobjects[highlight].breakpos);
-			}
-			else if (hyperobjects[highlight].line == i)
-			{
-				for (unsigned j = 0; j < hyperobjects[highlight].col - lineprinted; j++)
+					length = strlen(buf) - hyperobjects[highlight].breakpos;
+				fprintf(prnFD, "%s",
+						buf + length - hyperobjects[highlight].breakpos);
+				lineprinted +=
+					strlen(buf + length - hyperobjects[highlight].breakpos);
+			} else if (hyperobjects[highlight].line == i) {
+				for (unsigned j = 0;
+					 j < hyperobjects[highlight].col - lineprinted; j++)
 					fprintf(prnFD, " ");
 				fprintf(prnFD, "%s", buf);
-				lineprinted = hyperobjects[highlight].col +
-					strlen(buf);
+				lineprinted = hyperobjects[highlight].col + strlen(buf);
 			}
 			if (highlight < hyperobjectcount - 1)
 				highlight++;

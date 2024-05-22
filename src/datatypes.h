@@ -33,43 +33,35 @@
 
 #define HIGHLIGHT 1000
 
-typedef struct
-{
-	char lastsearch[256];	/* last searched regexp */
-	char type;				/* type of the last search (global/local) */
-	int search;				/* if true -- search again */
-}
-SearchAgain;
+typedef struct {
+	char lastsearch[256]; /* last searched regexp */
+	char type;			  /* type of the last search (global/local) */
+	int search;			  /* if true -- search again */
+} SearchAgain;
 
-typedef struct
-{
-	char filename[256];		/* name of file, where's the given offset */
-	long offset;			/* offset of the node */
-}
-Indirect;
+typedef struct {
+	char filename[256]; /* name of file, where's the given offset */
+	long offset;		/* offset of the node */
+} Indirect;
 
-typedef struct
-{
-	char nodename[256];		/* name of the node */
-	long offset;			/* offset of the node */
-}
-TagTable;
+typedef struct {
+	char nodename[256]; /* name of the node */
+	long offset;		/* offset of the node */
+} TagTable;
 
-typedef struct
-{
+typedef struct {
 	int length;
-	char **node;	/* array of history of nodes */
-	char **file;	/* array of history of files, associated with given nodes */
-	int *pos;		/* history of pos offsets in viewed nodes */
-	int *cursor;	/* history of cursor offsets in viewed nodes */
-	int *menu;		/* history of menu positions (in sequential reading) in viewed nodes */
-}
-InfoHistory;
+	char **node; /* array of history of nodes */
+	char **file; /* array of history of files, associated with given nodes */
+	int *pos;	 /* history of pos offsets in viewed nodes */
+	int *cursor; /* history of cursor offsets in viewed nodes */
+	int *menu;	 /* history of menu positions (in sequential reading) in viewed
+					nodes */
+} InfoHistory;
 
-typedef struct
-{
-	unsigned line;			/* line number of the place where the link is */
-	unsigned col;			/* column number ----||---- */
+typedef struct {
+	unsigned line;		/* line number of the place where the link is */
+	unsigned col;		/* column number ----||---- */
 	int breakpos;		/* col number, where the links breaks to next line */
 	int type;			/* type of link: 0 -  * menu::,
 						   1 -  * Comment: menu.
@@ -82,9 +74,8 @@ typedef struct
 	int nodelen;		/* length of string node */
 	char file[256];		/* name of the referenced file -- none=this file */
 	int filelen;		/* length of string file */
-	int tagtableoffset;	/* offset in tag table */
-}
-HyperObject;
+	int tagtableoffset; /* offset in tag table */
+} HyperObject;
 
 extern int verbose;
 
@@ -185,22 +176,24 @@ extern int quote_ignored;
 extern int winchanged;
 /* true if we prefer man pages over info pages */
 extern int use_manual;
-/* true if pinfo/curses should grab the mouse and override normal terminal mouse behaviour */
+/* true if pinfo/curses should grab the mouse and override normal terminal mouse
+ * behaviour */
 extern int grab_mouse;
-/* if true, search the current directory first, before checking /sur/share/info etc */
+/* if true, search the current directory first, before checking /sur/share/info
+ * etc */
 extern int use_raw_filename;
-/* If set to true , pinfo will not attempt to display texinfo pages without tag tables */
+/* If set to true , pinfo will not attempt to display texinfo pages without tag
+ * tables */
 extern int DontHandleWithoutTagTable;
 
-
 /* initialize history (see struct above) * variables for `lastread' history */
-void inithistory ();
+void inithistory();
 /* adds a history entry to the info file `lastread' history */
-void addinfohistory (char *file, char *node, int cursor, int menu, int pos);
+void addinfohistory(char *file, char *node, int cursor, int menu, int pos);
 /* deletes last history entry */
-void dellastinfohistory ();
+void dellastinfohistory();
 
 /* clears the default searchpath for openinfo() */
-void clearfilenameprefix ();
+void clearfilenameprefix();
 
 #endif

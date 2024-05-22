@@ -26,52 +26,52 @@
 #define _DEFAULT_SOURCE 1
 #define _BSD_SOURCE 1
 
-#include <stdio.h>
+#include <assert.h>
+#include <ctype.h>
+#include <grp.h>
 #include <libgen.h>
+#include <pwd.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <strings.h>
-#include <stdlib.h>
-#include <signal.h>
-#include <unistd.h>
-#include <ctype.h>
-#include <sys/types.h>
 #include <sys/stat.h>
-#include <pwd.h>
-#include <grp.h>
-#include <assert.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "config.h"
 
-#if HAVE_NCURSESW_H           /* if <ncursesw.h> should be used              */
-#  include <ncursesw.h>
-#elif HAVE_NCURSESW_CURSES_H  /* if <ncursesw/curses.h> should be used       */
-#  include <ncursesw/curses.h>
-#elif HAVE_NCURSES_H          /* if <ncurses.h> should be used               */
-#  include <ncurses.h>
-#elif HAVE_NCURSES_CURSES_H   /* if <ncurses/curses.h> should be used        */
-#  include <ncurses/curses.h>
-#elif HAVE_CURSES_H           /* if <curses.h> is present and should be used */
-#  include <curses.h>
+#if HAVE_NCURSESW_H /* if <ncursesw.h> should be used              */
+#include <ncursesw.h>
+#elif HAVE_NCURSESW_CURSES_H /* if <ncursesw/curses.h> should be used       */
+#include <ncursesw/curses.h>
+#elif HAVE_NCURSES_H /* if <ncurses.h> should be used               */
+#include <ncurses.h>
+#elif HAVE_NCURSES_CURSES_H /* if <ncurses/curses.h> should be used        */
+#include <ncurses/curses.h>
+#elif HAVE_CURSES_H /* if <curses.h> is present and should be used */
+#include <curses.h>
 #else
-#  error "No valid curses headers detected"
+#error "No valid curses headers detected"
 #endif
 
 #include "localestuff.h"
 
+#include "colors.h"
 #include "datatypes.h"
 #include "filehandling_functions.h"
-#include "video.h"
-#include "menu_and_note_utils.h"
-#include "mainfunction.h"
-#include "utils.h"
-#include "signal_handler.h"
-#include "colors.h"
-#include "regexp_search.h"
-#include "manual.h"
-#include "parse_config.h"
-#include "keyboard.h"
 #include "initializelinks.h"
+#include "keyboard.h"
+#include "mainfunction.h"
+#include "manual.h"
+#include "menu_and_note_utils.h"
+#include "parse_config.h"
 #include "printinfo.h"
+#include "regexp_search.h"
+#include "signal_handler.h"
+#include "utils.h"
+#include "video.h"
 
 /*
  * Readline isn't safe for nonlinux terminals (i.e. vt100)
@@ -91,17 +91,18 @@
 #define _REGEX_RE_COMP
 
 /* somewhat portable way of flagging unused vars
- * from https://stackoverflow.com/questions/7090998/portable-unused-parameter-macro-used-on-function-signature-for-c-and-c
+ * from
+ * https://stackoverflow.com/questions/7090998/portable-unused-parameter-macro-used-on-function-signature-for-c-and-c
  */
 #ifdef UNUSED
 #elif defined(__GNUC__)
-# define UNUSED(x) x __attribute__((unused))
+#define UNUSED(x) x __attribute__((unused))
 #elif defined(__LCLINT__)
-# define UNUSED(x) /*@unused@*/ x
+#define UNUSED(x) /*@unused@*/ x
 #elif defined(__cplusplus)
-# define UNUSED(x)
+#define UNUSED(x)
 #else
-# define UNUSED(x) x
+#define UNUSED(x) x
 #endif
 
 #endif
