@@ -52,3 +52,6 @@ executable(meson.project_name(),
 	include_directories: target_include,
 	dependencies: [curses_dep, readline_dep],
 	install: true)
+
+install_data('pinforc',
+	install_dir: '/etc/pinfo')
