@@ -201,8 +201,8 @@ void initlocale() {
 /* ___DEBUG___ */
 #endif
 	setlocale(LC_ALL, "");
-	bindtextdomain(PACKAGE, LOCALEDIR);
-	textdomain(PACKAGE);
+	//bindtextdomain(PACKAGE, LOCALEDIR);
+	//textdomain(PACKAGE);
 }
 
 void mymvhline(int y, int x, char ch, int len) {

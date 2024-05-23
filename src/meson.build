@@ -1,7 +1,6 @@
 conf_data = configuration_data()
 conf_data.set_quoted('PACKAGE', meson.project_name())
-conf_data.set_quoted('CONFIGDIR', 'test/config')
-conf_data.set_quoted('LOCALEDIR', 'test/locale')
+conf_data.set_quoted('CONFIGDIR', '/etc/pinforc')
 conf_data.set_quoted('PACKAGE_VERSION', meson.project_version())
 conf_data.set10('HAVE_CURSES_H', true)
 conf_data.set10('HAVE_DECL_CURS_SET', true)
@@ -54,4 +53,4 @@ executable(meson.project_name(),
 	install: true)
 
 install_data('pinforc',
-	install_dir: '/etc/pinfo')
+	install_dir: '/etc/pinforc')
