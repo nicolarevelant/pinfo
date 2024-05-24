@@ -56,4 +56,4 @@ executable(meson.project_name(),
 	install: true)
 
 install_data('pinforc',
-	install_dir: '/etc/pinforc')
+	install_dir: '/etc')
