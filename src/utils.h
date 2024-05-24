@@ -25,10 +25,6 @@
 extern char *safe_user;
 extern char *safe_group;
 
-#ifndef HAVE_DECL_CURS_SET
-void curs_set(int a);
-#endif
-
 #ifdef ___DONT_USE_REGEXP_SEARCH___
 extern char *pinfo_re_pattern;
 #endif

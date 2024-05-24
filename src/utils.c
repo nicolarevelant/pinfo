@@ -32,10 +32,6 @@
 char *safe_user = "nobody";
 char *safe_group = "nogroup";
 
-#ifndef HAVE_DECL_CURS_SET
-void curs_set(int a) {}
-#endif
-
 #ifdef ___DONT_USE_REGEXP_SEARCH___
 char *pinfo_re_pattern = 0;
 #else
@@ -201,8 +197,8 @@ void initlocale() {
 /* ___DEBUG___ */
 #endif
 	setlocale(LC_ALL, "");
-	//bindtextdomain(PACKAGE, LOCALEDIR);
-	//textdomain(PACKAGE);
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	textdomain(PACKAGE);
 }
 
 void mymvhline(int y, int x, char ch, int len) {
