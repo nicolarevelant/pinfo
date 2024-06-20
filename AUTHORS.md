@@ -7,8 +7,7 @@ Its original author is [Przemek Borys](mailto:pborys@dione.ids.pl).
 
 Please file any comments/questions/bug reports as an issue on [Github](https://github.com/nicolarevelant/pinfo).
 
-Below are the names of the people who helped by sending good ideas, bugs
-reports, or helped out in some other way:
+Below are the names of the people who helped by sending good ideas, bugs reports, or helped out in some other way:
 
 - Adam Lazur
 - Aleksey I Zavilohin

@@ -73,16 +73,6 @@
 #include "utils.h"
 #include "video.h"
 
-/*
- * Readline isn't safe for nonlinux terminals (i.e. vt100)
- * But if you have readline linked with ncurses you may enable readline with
- * ./configure --with-readline
- *
- */
-#ifndef HAS_READLINE
-#include "readlinewrapper.h"
-#endif /* HAS_READLINE */
-
 /* somewhat portable way of flagging unused vars
  * from
  * https://stackoverflow.com/questions/7090998/portable-unused-parameter-macro-used-on-function-signature-for-c-and-c

@@ -38,10 +38,8 @@ char *pinfo_re_pattern = 0;
 int pinfo_re_offset = -1;
 #endif
 
-#ifdef HAS_READLINE
 #include <readline/history.h>
 #include <readline/readline.h>
-#endif /* HAS_READLINE */
 
 /*
  * the bellow define enables malloc/realloc/free logging to stderr.
@@ -317,7 +315,6 @@ char *getstring(char *prompt) {
 char *getstring_with_completion(char *prompt, const char *const *completions) {
 	char *buf;
 
-#ifdef HAS_READLINE
 	completion_values = completions;
 	rl_attempted_completion_function = getstring_completion;
 	rl_completion_display_matches_hook = my_rl_completion_display;
@@ -336,13 +333,6 @@ char *getstring_with_completion(char *prompt, const char *const *completions) {
 		add_history(buf);
 
 	curs_set(0);
-
-#else
-	(void)completions; /* unused */
-	move(maxy - 1, 0);
-	buf = readlinewrapper(prompt);
-
-#endif
 
 	return buf;
 }
