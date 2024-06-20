@@ -11,9 +11,10 @@ https://github.com/baszoetekouw/pinfo
 See man page (pinfo.1) for details. 
 
     Copyright (C) 1999       Przemek Borys <pborys@dione.ids.pl>
-    Copyright (C) 2005-2006  Bas Zoetekouw <bas@debian.org> 
+    Copyright (C) 2005-2006  Bas Zoetekouw <bas@debian.org>
                              Nathanael Nerode <neroden@fastmail.fm>
-    Copyright (C) 2007-2016  Bas Zoetekouw <bas@debian.org> 
+    Copyright (C) 2007-2016  Bas Zoetekouw <bas@debian.org>
+    Copyright (C) 2024       Nicola Revelant <nicolarevelant@outlook.com>
 
     This program is free software; you can redistribute it and/or modify it
     under the terms of version 2 of the GNU General Public License as
