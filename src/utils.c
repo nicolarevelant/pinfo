@@ -41,8 +41,7 @@ int pinfo_re_offset = -1;
 #ifdef HAS_READLINE
 #include <readline/history.h>
 #include <readline/readline.h>
-/* HAS_READLINE */
-#endif
+#endif /* HAS_READLINE */
 
 /*
  * the bellow define enables malloc/realloc/free logging to stderr.
@@ -632,32 +631,6 @@ int check_node_name(const char *const node_name,
 		return 0;
 	}
 }
-
-/*
- * The wcswidth function returns the number of columns needed to represent
- * the  wide-character  string pointed to by s, but at most n wide charac‐
- * ters. If a non-printable wide character occurs among these  characters,
- * -1 is returned.
- */
-#if defined(USE_WCHAR) && !defined(HAVE_WCSWIDTH)
-int wcswidth(const wchar_t *wstr, size_t max_len) {
-	int width = 0;
-	size_t i;
-	size_t len = wcslen(wstr);
-
-	/* never count more than max_len chars */
-	if (len > max_len)
-		len = max_len;
-
-	for (i = 0; i < len; i++) {
-		if (!iswprint(wstr[i]))
-			return -1;
-		width += wcwidth(wstr[i]);
-	}
-
-	return width;
-}
-#endif /* USE_WCHAR && !HAVE_WCSWIDTH */
 
 /* calculcate length of string, handling multibyte strings correctly
  * returns value <= len

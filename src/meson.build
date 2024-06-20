@@ -3,13 +3,15 @@ conf_data.set_quoted('PACKAGE', meson.project_name())
 conf_data.set_quoted('CONFIGDIR', '/etc/pinforc')
 conf_data.set_quoted('LOCALEDIR', '/usr/share/locale')
 conf_data.set_quoted('PACKAGE_VERSION', meson.project_version())
+
+conf_data.set10('ENABLE_NLS', true)
 conf_data.set10('HAVE_CURSES_H', true)
 conf_data.set10('HAVE_DECL_USE_DEFAULT_COLORS', true)
 conf_data.set10('HAVE_DECL_BKGDSET', true)
-conf_data.set10('ENABLE_NLS', true)
 conf_data.set10('HAVE_GETOPT_LONG', true)
 conf_data.set10('HAVE_CURSES_COLOR', true)
 conf_data.set10('HAS_READLINE', true)
+conf_data.set10('USE_WCHAR', true)
 
 config_h = configure_file(
 	output: 'config.h',
