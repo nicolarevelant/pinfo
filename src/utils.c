@@ -363,365 +363,364 @@ void closeprogram() {
 	else
 		printf("\n");
 	if (tmpfilename1) {
-		{
-			if (verbose)
-				printf("\n");
+		if (verbose) {
+			printf("\n");
 		}
+
 		if (tmpfilename1) {
 			unlink(tmpfilename1);
 			xfree(tmpfilename1);
 		}
+
 		if (tmpfilename2) {
 			unlink(tmpfilename2);
 			xfree(tmpfilename2);
 		}
 	}
+}
 
-	int gettagtablepos_search_internal(char *node, int left, int right) {
-		/* left+(right-left)/2 */
-		int thispos = left + ((right - left) >> 1);
-		int compare_result =
-			compare_tag_table_string(tag_table[thispos].nodename, node);
-		if (compare_result == 0)
-			return thispos;
-		else {
-			if (left == right)
+int gettagtablepos_search_internal(char *node, int left, int right) {
+	/* left+(right-left)/2 */
+	int thispos = left + ((right - left) >> 1);
+	int compare_result =
+		compare_tag_table_string(tag_table[thispos].nodename, node);
+	if (compare_result == 0)
+		return thispos;
+	else {
+		if (left == right)
+			return -1;
+		if (compare_result > 0) {
+			if (thispos > left)
+				return gettagtablepos_search_internal(node, left, thispos - 1);
+			else
 				return -1;
-			if (compare_result > 0) {
-				if (thispos > left)
-					return gettagtablepos_search_internal(node, left,
-														  thispos - 1);
-				else
-					return -1;
-			} else if (compare_result < 0) {
-				if (thispos < right)
-					return gettagtablepos_search_internal(node, thispos + 1,
-														  right);
-				else
-					return -1;
-			}
+		} else if (compare_result < 0) {
+			if (thispos < right)
+				return gettagtablepos_search_internal(node, thispos + 1, right);
+			else
+				return -1;
 		}
+	}
+	return -1;
+}
+
+int gettagtablepos(char *node) {
+	/* strip spaces from the beginning */
+	while (1) {
+		if ((*node != ' ') && (*node != '\t'))
+			break;
+		node++;
+	}
+	return gettagtablepos_search_internal(node, 1, TagTableEntries);
+}
+
+int pinfo_getch() {
+	int key = getch();
+	/* following key will be alt's value */
+	if (key == META_KEY) {
+		key = getch();
+		key |= 0x200;
+	}
+	return key;
+}
+
+void waitforgetch() {
+	int ret;
+
+	fd_set rdfs;
+	FD_ZERO(&rdfs);
+	FD_SET(0, &rdfs);
+
+	/* we might get interrupted by e.g. SIGTSTP/SIGCONT */
+	do
+		ret = select(1, &rdfs, NULL, NULL, NULL);
+	while (ret == -1 && errno == EINTR);
+}
+
+/* returns 0 on success, 1 on error */
+int pinfo_re_comp(char *name) {
+#ifdef ___DONT_USE_REGEXP_SEARCH___
+	if (pinfo_re_pattern) {
+		free(pinfo_re_pattern);
+		pinfo_re_pattern = 0;
+	}
+	pinfo_re_pattern = strdup(name);
+	return 0;
+#else
+	/* first see if we can compile the regexp */
+	regex_t preg;
+	if (regcomp(&preg, name, REG_ICASE) != 0) {
+		/* compilation failed, so return */
 		return -1;
 	}
 
-	int gettagtablepos(char *node) {
-		/* strip spaces from the beginning */
-		while (1) {
-			if ((*node != ' ') && (*node != '\t'))
-				break;
-			node++;
-		}
-		return gettagtablepos_search_internal(node, 1, TagTableEntries);
-	}
-
-	int pinfo_getch() {
-		int key = getch();
-		/* following key will be alt's value */
-		if (key == META_KEY) {
-			key = getch();
-			key |= 0x200;
-		}
-		return key;
-	}
-
-	void waitforgetch() {
-		int ret;
-
-		fd_set rdfs;
-		FD_ZERO(&rdfs);
-		FD_SET(0, &rdfs);
-
-		/* we might get interrupted by e.g. SIGTSTP/SIGCONT */
-		do
-			ret = select(1, &rdfs, NULL, NULL, NULL);
-		while (ret == -1 && errno == EINTR);
-	}
-
-	/* returns 0 on success, 1 on error */
-	int pinfo_re_comp(char *name) {
-#ifdef ___DONT_USE_REGEXP_SEARCH___
-		if (pinfo_re_pattern) {
-			free(pinfo_re_pattern);
-			pinfo_re_pattern = 0;
-		}
-		pinfo_re_pattern = strdup(name);
-		return 0;
-#else
-		/* first see if we can compile the regexp */
-		regex_t preg;
-		if (regcomp(&preg, name, REG_ICASE) != 0) {
-			/* compilation failed, so return */
-			return -1;
-		}
-
-		/* compilation succeeded */
-		/* first make some space in h_regexp[] to store the compiled regexp */
-		if (pinfo_re_offset == -1) {
-			pinfo_re_offset = h_regexp_num;
-			if (!h_regexp_num)
-				h_regexp = malloc(sizeof(regex_t));
-			else
-				h_regexp =
-					realloc(h_regexp, sizeof(regex_t) * (h_regexp_num + 1));
-		} else {
-			regfree(&h_regexp[pinfo_re_offset]);
-		}
-
-		/* then copy the compiled expression into the newly allocated space */
-		memcpy(&h_regexp[pinfo_re_offset], &preg, sizeof(preg));
-
-		/* and finally return 0 for success */
-		return 0;
-#endif
-	}
-
-	int pinfo_re_exec(char *name) {
-#ifdef ___DONT_USE_REGEXP_SEARCH___
-		char *found;
-		if (pinfo_re_pattern) {
-			found = strstr(name, pinfo_re_pattern);
-			if (found != NULL)
-				return 1;
-			else
-				return 0;
-		}
-#else
-		regmatch_t pmatch[1];
-		return !regexec(&h_regexp[pinfo_re_offset], name, 1, pmatch, 0);
-#endif
-	}
-
-	int yesno(char *prompt, int def) {
-		char *yes = _("yes");
-		char *no = _("no");
-		int key;
-
-		attrset(bottomline);
-		mymvhline(maxy - 1, 0, ' ', maxx);
-		move(maxy - 1, 0);
-		/* if default answer is yes */
-		if (def)
-			printw("%s([%c]/%c)", prompt, *yes, *no);
+	/* compilation succeeded */
+	/* first make some space in h_regexp[] to store the compiled regexp */
+	if (pinfo_re_offset == -1) {
+		pinfo_re_offset = h_regexp_num;
+		if (!h_regexp_num)
+			h_regexp = malloc(sizeof(regex_t));
 		else
-			printw("%s([%c]/%c)", prompt, *no, *yes);
-		nodelay(stdscr, FALSE);
-		while (1) {
-			key = getch();
-			if (key == ERR)
-				return -1;
-			if (is_enter_key(key))
+			h_regexp = realloc(h_regexp, sizeof(regex_t) * (h_regexp_num + 1));
+	} else {
+		regfree(&h_regexp[pinfo_re_offset]);
+	}
+
+	/* then copy the compiled expression into the newly allocated space */
+	memcpy(&h_regexp[pinfo_re_offset], &preg, sizeof(preg));
+
+	/* and finally return 0 for success */
+	return 0;
+#endif
+}
+
+int pinfo_re_exec(char *name) {
+#ifdef ___DONT_USE_REGEXP_SEARCH___
+	char *found;
+	if (pinfo_re_pattern) {
+		found = strstr(name, pinfo_re_pattern);
+		if (found != NULL)
+			return 1;
+		else
+			return 0;
+	}
+#else
+	regmatch_t pmatch[1];
+	return !regexec(&h_regexp[pinfo_re_offset], name, 1, pmatch, 0);
+#endif
+}
+
+int yesno(char *prompt, int def) {
+	char *yes = _("yes");
+	char *no = _("no");
+	int key;
+
+	attrset(bottomline);
+	mymvhline(maxy - 1, 0, ' ', maxx);
+	move(maxy - 1, 0);
+	/* if default answer is yes */
+	if (def)
+		printw("%s([%c]/%c)", prompt, *yes, *no);
+	else
+		printw("%s([%c]/%c)", prompt, *no, *yes);
+	nodelay(stdscr, FALSE);
+	while (1) {
+		key = getch();
+		if (key == ERR)
+			return -1;
+		if (is_enter_key(key))
+			break;
+		else {
+			if (tolower(key) == tolower(*yes)) {
+				def = 1;
 				break;
-			else {
-				if (tolower(key) == tolower(*yes)) {
-					def = 1;
+			} else {
+				if (tolower(key) == tolower(*no)) {
+					def = 0;
 					break;
-				} else {
-					if (tolower(key) == tolower(*no)) {
-						def = 0;
-						break;
-					} else
-						beep();
-				}
+				} else
+					beep();
 			}
 		}
-
-		nodelay(stdscr, TRUE);
-		if (def)
-			addstr(yes);
-		else
-			addstr(no);
-		attrset(normal);
-		return def;
 	}
 
-	void myclrtoeol() {
-		unsigned x, y;
-		getyx(stdscr, y, x);
-		for (unsigned i = x; i < maxx; i++)
-			mvaddch(y, i, ' ');
+	nodelay(stdscr, TRUE);
+	if (def)
+		addstr(yes);
+	else
+		addstr(no);
+	attrset(normal);
+	return def;
+}
+
+void myclrtoeol() {
+	unsigned x, y;
+	getyx(stdscr, y, x);
+	for (unsigned i = x; i < maxx; i++)
+		mvaddch(y, i, ' ');
+}
+
+void copy_stripped_from_regexp(char *src, char *dest) {
+	char *forbidden = "*.\\()[]\n";
+	while (strchr(forbidden, *src) == NULL) {
+		if (*src == 0)
+			break;
+		*dest = *src;
+		src++;
+		dest++;
+	}
+	*dest = 0;
+}
+
+void myendwin() {
+	curs_set(shell_cursor);
+	endwin();
+}
+
+void handlewinch() {
+	myendwin();
+	init_curses();
+	doupdate();
+	getmaxyx(stdscr, maxy, maxx);
+	ungetch(keys.refresh_1);
+}
+
+/*
+ * this functions checks whether the node header node_header
+ * corresponds to node node_name
+ *
+ * e.g. the header is something like:
+ * File: bash.info,  Node: Introduction,  Next: Defs,  Prev: Top,  Up: Top
+ * and we check here if the Node: entry in this header is equal to node_name
+ *
+ * returns  0 if node_header does not belong to a node with name node_name
+ * returns -1 if no checking was done
+ * returns  1 if check turned out ok
+ */
+int check_node_name(const char *const node_name,
+					const char *const node_header) {
+	size_t header_len;
+	char *header, *str_start, *c;
+	int res;
+
+	/* if either one of node_name or node_header is NULL or a zero
+	 * sized string, we have nothing to check, so return success */
+	if ((node_name == NULL) || (node_header == NULL) ||
+		(strlen(node_name) == 0) || (strlen(node_header) == 0)) {
+		return 1;
 	}
 
-	void copy_stripped_from_regexp(char *src, char *dest) {
-		char *forbidden = "*.\\()[]\n";
-		while (strchr(forbidden, *src) == NULL) {
-			if (*src == 0)
-				break;
-			*dest = *src;
-			src++;
-			dest++;
-		}
-		*dest = 0;
+	header_len = strlen(node_header);
+
+	/* copy node_header to a local string which can be mutilated */
+	/* don't use strdup here, as xmalloc handles all errors */
+	header = xmalloc(header_len + 1);
+	strcpy(header, node_header);
+
+	/* search for "Node: foobar," in node_header */
+	str_start = strstr(header, "Node: ");
+	if (str_start == NULL) /* no match */
+	{
+		return 0;
 	}
+	/* advance str_start to the start of the node name */
+	str_start += strlen("Node: ");
+	/* and search for the next comma, tab, or newline */
+	c = str_start;
+	while ((*c != ',') && (*c != '\t') && (*c != '\n') && (*c != '\0'))
+		c++;
+	*c = '\0';
 
-	void myendwin() {
-		curs_set(shell_cursor);
-		endwin();
+	/* so, now str_start point to a \0-terminated string containing the
+	 * node name from the header.
+	 * Let's compare it with the node_name we're looking for */
+	res = strcmp(str_start, node_name);
+
+	/* we're done, so free alloc'ed vars */
+	xfree(header);
+
+	/* check result of strcmp() and return */
+	if (res == 0) {
+		/* match found */
+		return 1;
+	} else {
+		/* no match */
+		return 0;
 	}
+}
 
-	void handlewinch() {
-		myendwin();
-		init_curses();
-		doupdate();
-		getmaxyx(stdscr, maxy, maxx);
-		ungetch(keys.refresh_1);
-	}
-
-	/*
-	 * this functions checks whether the node header node_header
-	 * corresponds to node node_name
-	 *
-	 * e.g. the header is something like:
-	 * File: bash.info,  Node: Introduction,  Next: Defs,  Prev: Top,  Up: Top
-	 * and we check here if the Node: entry in this header is equal to node_name
-	 *
-	 * returns  0 if node_header does not belong to a node with name node_name
-	 * returns -1 if no checking was done
-	 * returns  1 if check turned out ok
-	 */
-	int check_node_name(const char *const node_name,
-						const char *const node_header) {
-		size_t header_len;
-		char *header, *str_start, *c;
-		int res;
-
-		/* if either one of node_name or node_header is NULL or a zero
-		 * sized string, we have nothing to check, so return success */
-		if ((node_name == NULL) || (node_header == NULL) ||
-			(strlen(node_name) == 0) || (strlen(node_header) == 0)) {
-			return 1;
-		}
-
-		header_len = strlen(node_header);
-
-		/* copy node_header to a local string which can be mutilated */
-		/* don't use strdup here, as xmalloc handles all errors */
-		header = xmalloc(header_len + 1);
-		strcpy(header, node_header);
-
-		/* search for "Node: foobar," in node_header */
-		str_start = strstr(header, "Node: ");
-		if (str_start == NULL) /* no match */
-		{
-			return 0;
-		}
-		/* advance str_start to the start of the node name */
-		str_start += strlen("Node: ");
-		/* and search for the next comma, tab, or newline */
-		c = str_start;
-		while ((*c != ',') && (*c != '\t') && (*c != '\n') && (*c != '\0'))
-			c++;
-		*c = '\0';
-
-		/* so, now str_start point to a \0-terminated string containing the
-		 * node name from the header.
-		 * Let's compare it with the node_name we're looking for */
-		res = strcmp(str_start, node_name);
-
-		/* we're done, so free alloc'ed vars */
-		xfree(header);
-
-		/* check result of strcmp() and return */
-		if (res == 0) {
-			/* match found */
-			return 1;
-		} else {
-			/* no match */
-			return 0;
-		}
-	}
-
-	/* calculcate length of string, handling multibyte strings correctly
-	 * returns value <= len
-	 */
-	int width_of_string(const char *const mbs, const int len) {
-		int width;
-		char *str;
+/* calculcate length of string, handling multibyte strings correctly
+ * returns value <= len
+ */
+int width_of_string(const char *const mbs, const int len) {
+	int width;
+	char *str;
 #ifdef USE_WCHAR
-		wchar_t *wstr;
+	wchar_t *wstr;
 #endif /* USE_WCHAR */
 
-		if (len < 0)
-			return -1;
-		if (len == 0)
-			return 0;
+	if (len < 0)
+		return -1;
+	if (len == 0)
+		return 0;
 
-		/* copy the string to a local buffer, because we only want to
-		 * compare the first len bytes */
-		str = xmalloc(len + 1);
-		memcpy(str, mbs, len);
+	/* copy the string to a local buffer, because we only want to
+	 * compare the first len bytes */
+	str = xmalloc(len + 1);
+	memcpy(str, mbs, len);
 
 #ifdef USE_WCHAR
 
-		/* allocate a widestring */
-		wstr = xmalloc((len + 1) * sizeof(wchar_t));
+	/* allocate a widestring */
+	wstr = xmalloc((len + 1) * sizeof(wchar_t));
 
-		mbstowcs(wstr, str, len);
-		width = wcswidth(wstr, len);
+	mbstowcs(wstr, str, len);
+	width = wcswidth(wstr, len);
 
-		/* clean up */
-		xfree(wstr);
+	/* clean up */
+	xfree(wstr);
 
 #else /* USE_WCHAR */
 
-		width = strlen(str);
+	width = strlen(str);
 
 #endif /* USE_WCHAR */
 
-		/* clean up */
-		xfree(str);
+	/* clean up */
+	xfree(str);
 
-		return width;
-	}
+	return width;
+}
 
-	/*
-	 * calculates the length of string between start and end, counting `\t' as
-	 * filling up to 8 chars. (i.e. at line 22 tab will increment the counter by
-	 * 2 [8-(22-int(22/8)*8)] spaces)
-	 */
-	int calculate_len(char *start, char *end) {
-		int len = 0;
-		char *c = start;
-		while (c < end) {
-			if (*c == '\t') {
-				/* now, first count everything leading up to this position */
-				len += width_of_string(start, c - start);
-				start = c + 1;
-				/* then add the extra width of the tab */
-				len = (len & ~0x07) + 0x08;
-			}
-			c++;
+/*
+ * calculates the length of string between start and end, counting `\t' as
+ * filling up to 8 chars. (i.e. at line 22 tab will increment the counter by
+ * 2 [8-(22-int(22/8)*8)] spaces)
+ */
+int calculate_len(char *start, char *end) {
+	int len = 0;
+	char *c = start;
+	while (c < end) {
+		if (*c == '\t') {
+			/* now, first count everything leading up to this position */
+			len += width_of_string(start, c - start);
+			start = c + 1;
+			/* then add the extra width of the tab */
+			len = (len & ~0x07) + 0x08;
 		}
-		/* then count everything after the last tab */
-		len += width_of_string(start, c - start);
+		c++;
+	}
+	/* then count everything after the last tab */
+	len += width_of_string(start, c - start);
 
-		return len;
+	return len;
+}
+
+/*
+ * create a temporary file in a safe way, and return its name in a newly
+ * allocated string
+ */
+char *make_tempfile() {
+	char *filename;
+
+	/* TODO: fix hardcoded /tmp */
+	char tmpfile_template[32] = "/tmp/pinfo.XXXXXX";
+
+	/* create a tmpfile */
+	int fd = mkstemp(tmpfile_template);
+	/* bug out if it failed */
+	if (fd == -1) {
+		closeprogram();
+		printf(_("Couldn't open temporary file\n"));
+		exit(1);
 	}
 
-	/*
-	 * create a temporary file in a safe way, and return its name in a newly
-	 * allocated string
-	 */
-	char *make_tempfile() {
-		char *filename;
+	/* allocate a new string and copy the filename there */
+	filename = xmalloc(33); /* guarenteerd to be set to \0's */
+	strncpy(filename, tmpfile_template, 32);
 
-		/* TODO: fix hardcoded /tmp */
-		char tmpfile_template[32] = "/tmp/pinfo.XXXXXX";
+	/* close the file */
+	close(fd);
 
-		/* create a tmpfile */
-		int fd = mkstemp(tmpfile_template);
-		/* bug out if it failed */
-		if (fd == -1) {
-			closeprogram();
-			printf(_("Couldn't open temporary file\n"));
-			exit(1);
-		}
-
-		/* allocate a new string and copy the filename there */
-		filename = xmalloc(33); /* guarenteerd to be set to \0's */
-		strncpy(filename, tmpfile_template, 32);
-
-		/* close the file */
-		close(fd);
-
-		return filename;
-	}
+	return filename;
+}
