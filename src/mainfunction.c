@@ -198,8 +198,8 @@ WorkRVal work(char ***message, char **type, unsigned long *lines, FILE *id,
 								ungetch(KEY_NOTHING);
 							}
 						} /* end: else if nextnode==ERRNODE */
-					}	  /* end: if we shouldn't select a menu item */
-				}		  /* end: if position is right */
+					} /* end: if we shouldn't select a menu item */
+				} /* end: if position is right */
 			}
 			/*==========================================================================*/
 			if ((key == keys.goline_1) || (key == keys.goline_2)) {
@@ -439,15 +439,15 @@ WorkRVal work(char ***message, char **type, unsigned long *lines, FILE *id,
 								}
 								break;
 							}
-						}	 /* end: if (tokenpos) */
-					}		 /* end: indirect file loop */
+						} /* end: if (tokenpos) */
+					} /* end: indirect file loop */
 					if (tmp) /* free tmp buffer */
 					{
 						xfree(tmp);
 						tmp = 0;
 					}
 					fclose(fd);
-				}	 /* end: if (indirect) */
+				} /* end: if (indirect) */
 				else /* if not indirect */
 				/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 				   - - - - - - */
@@ -522,7 +522,7 @@ WorkRVal work(char ***message, char **type, unsigned long *lines, FILE *id,
 							fseek(id, filepos, SEEK_SET); /* seek to old
 														   * filepos. */
 						}
-					}		 /* end: if (tokenpos) <--> token found */
+					} /* end: if (tokenpos) <--> token found */
 					if (tmp) /* free tmp buffer */
 					{
 						xfree(tmp);
