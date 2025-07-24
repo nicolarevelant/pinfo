@@ -185,6 +185,10 @@ int main(int argc, char *argv[]) {
 				argv[0]);
 			exit(0);
 		case 'v':
+			// If the `verbose` option was not enabled, then the version has not
+			// been shown and it has to be shown now
+			if (!verbose)
+				printf("pinfo v%s\n", version);
 			exit(0);
 		case 'm':
 			checksu();
@@ -543,9 +547,9 @@ int main(int argc, char *argv[]) {
 							tag_table_pos = gettagtablepos(FirstNodeName);
 
 					} /* end: open new info file -- file exists */
-				}	  /* end: open new info file */
-			}		  /* end: file name was specified */
-		}			  /* end: node was specified in work return value */
+				} /* end: open new info file */
+			} /* end: file name was specified */
+		} /* end: node was specified in work return value */
 	} while (work_return_value.node);
 	fclose(id);
 	closeprogram();

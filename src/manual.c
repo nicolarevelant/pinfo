@@ -173,8 +173,14 @@ void set_initial_history(char *name) {
 		snprintf(buf, sizeof(buf), "man -w -W %s %s", ManOptions, name);
 		pathFile = popen(buf, "r");
 		if (fgets(buf, sizeof(buf), pathFile) == NULL) {
-			fprintf(stderr, "Error executing command '%s'\n", buf);
-			exit(1);
+			pclose(pathFile);
+			/* Try without -W */
+			snprintf(buf, sizeof(buf), "man -w %s %s", ManOptions, name);
+			pathFile = popen(buf, "r");
+			if (fgets(buf, sizeof(buf), pathFile) == NULL) {
+				fprintf(stderr, "Error executing command '%s'\n", buf);
+				exit(1);
+			}
 		}
 		pclose(pathFile);
 		/* buf will be of the form "/usr/share/man/man1/sleep.1.gz". We
@@ -431,9 +437,9 @@ int handlemanual(char *name) {
 			fclose(id);
 			free(ignored_entries);
 		} /* if (ignored_macros... */
-		/****************************************************************************
-		 *                    Ignore macros part: END *
-		 ****************************************************************************/
+	/****************************************************************************
+	 *                    Ignore macros part: END *
+	 ****************************************************************************/
 #endif
 	if (!plain_apropos) {
 		snprintf(cmd, 255, "man %s %s %s > %s", ManOptions, name,
@@ -1318,9 +1324,9 @@ int manualwork() {
 					manualcol--;
 			if ((key == keys.right_1) || (key == keys.right_2))
 				manualcol++;
-				/*=====================================================*/
-				/********* end of keyboard handling *********************/
-				/********* mouse handler ********************************/
+			/*=====================================================*/
+			/********* end of keyboard handling *********************/
+			/********* mouse handler ********************************/
 #ifdef CURSES_MOUSE
 			if (key == KEY_MOUSE) {
 				MEVENT mouse;

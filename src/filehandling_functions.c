@@ -432,12 +432,14 @@ int seek_indirect(FILE *id) {
 	xfree(type);
 	type = 0;
 	if (!curses_open) {
-		printf(_("Searching for indirect done"));
+		if (verbose)
+			printf(_("Searching for indirect done"));
 		printf("\n");
 	} else {
 		attrset(bottomline);
 		mvhline(maxy - 1, 0, ' ', maxx);
-		mvaddstr(maxy - 1, 0, _("Searching for indirect done"));
+		if (verbose)
+			mvaddstr(maxy - 1, 0, _("Searching for indirect done"));
 		attrset(normal);
 	}
 	fseek(id, seek_pos, SEEK_SET);
@@ -497,12 +499,14 @@ int seek_tag_table(FILE *id, int quiet) {
 	}
 	xfree(type);
 	type = 0;
-	if (!curses_open)
-		printf(_("Searching for tag table done\n"));
-	else {
+	if (!curses_open) {
+		if (verbose)
+			printf(_("Searching for tag table done\n"));
+	} else {
 		attrset(bottomline);
 		mvhline(maxy - 1, 0, ' ', maxx);
-		mvaddstr(maxy - 1, 0, "Searching for tag table done");
+		if (verbose)
+			mvaddstr(maxy - 1, 0, "Searching for tag table done");
 		attrset(normal);
 	}
 	fseek(id, seek_pos, SEEK_SET);
@@ -1087,9 +1091,9 @@ void create_tag_table(FILE *id) {
 						break;
 					}
 				} /* end: for loop, looking for second colon */
-			}	  /* end: not a fake node */
-		}		  /* end: we've found a node entry(INFO_TAG) */
-	}			  /* end: global while loop, looping until eof */
+			} /* end: not a fake node */
+		} /* end: we've found a node entry(INFO_TAG) */
+	} /* end: global while loop, looping until eof */
 	xfree(buf);
 	buf = 0;
 	if (!indirect) {
