@@ -1,82 +1,89 @@
+# NEWS
+
 0.6.13: (2019-02-16)
-  - Fix crash on 32-bit architectures
+
+- Fix crash on 32-bit architectures
 
 0.6.12: (2019-02-11)
-  - minor release to fix the use of defualt colors (COLOR_DEFAULT) on ncurses
-    installs; COLOR_DEFAULT values in pinforc were silently ignored, causing
-    pinfo to use black-on-balc or white-on-white text
-  - remove AM_MAINTAINER_MODE from autoconf scripts to make sure all necessary
-    files are always rebuilt on ./configure && make
-  - fix possibel buffer overflow (and compiler error with gcc 8.2)
+
+- minor release to fix the use of defualt colors (COLOR_DEFAULT) on ncurses
+  installs; COLOR_DEFAULT values in pinforc were silently ignored, causing
+  pinfo to use black-on-balc or white-on-white text
+- remove AM_MAINTAINER_MODE from autoconf scripts to make sure all necessary
+  files are always rebuilt on ./configure && make
+- fix possibel buffer overflow (and compiler error with gcc 8.2)
 
 0.6.11: (2019-02-08)
-  - Gracefully handle missing indirect info nodes
-    (https://bugs.debian.org/298865)
-  - Fix infinite loop when regexp-matching an empty string
-    (https://bugs.debian.org/358389)
-  - Fix loading of bare info pages (i.e., without .info extension)
-    (http://bugs.debian.org/496840)
-  - Properly load info pages whose name starts with "dir"
-    (http://bugs.debian.org/496840)
-  - Changes and tweaks to the auto* build tools
-  - Get rid of inlined functions, which break building with gcc7
-    (https://bugs.debian.org/853613)
-  - Fix segfautl when closing unopened file
-  - Fix typos in docs
-  - Fix compiler warnings
-  - Fix a number of out-of-buffer write, buffer overflows, string truncations
-  - Clean up documentation
-  - Correctly handle redirected stdin and/or stdout (https://bugs.debian.org/671306)
-  - Fix crash after failed global search
-  - Make curses mouse behaviour configurable
+
+- Gracefully handle missing indirect info nodes
+    (<https://bugs.debian.org/298865>)
+- Fix infinite loop when regexp-matching an empty string
+    (<https://bugs.debian.org/358389>)
+- Fix loading of bare info pages (i.e., without .info extension)
+    (<http://bugs.debian.org/496840>)
+- Properly load info pages whose name starts with "dir"
+    (<http://bugs.debian.org/496840>)
+- Changes and tweaks to the auto* build tools
+- Get rid of inlined functions, which break building with gcc7
+    (<https://bugs.debian.org/853613>)
+- Fix segfautl when closing unopened file
+- Fix typos in docs
+- Fix compiler warnings
+- Fix a number of out-of-buffer write, buffer overflows, string truncations
+- Clean up documentation
+- Correctly handle redirected stdin and/or stdout (<https://bugs.debian.org/671306>)
+- Fix crash after failed global search
+- Make curses mouse behaviour configurable
     Note: this changes the default behaviour to not capture the mouse. To
     restore the old behaviour, set GRAB-MOUSE=true in pinforc.
-  - Avoid an infinite loop for malformed info pages
-  - Add readline tab completion for nodes (https://bugs.debian.org/431708)
-  - Correct parse node links that span multiple (indented) lines.
-    (https://github.com/baszoetekouw/pinfo/issues/6)
-  - If a direct info page hit isn't found, try to look up a node in the dir
-    (https://github.com/baszoetekouw/pinfo/issues/6)
-  - Improve lookup of info pages
-    (https://github.com/baszoetekouw/pinfo/issues/6)
-  - Fix linking to man pages in a different section
-    (https://github.com/baszoetekouw/pinfo/issues/6)
-  - Fix the -n/--node command line option
-    (https://bugs.launchpad.net/ubuntu/+source/pinfo/+bug/1599374)
+- Avoid an infinite loop for malformed info pages
+- Add readline tab completion for nodes (<https://bugs.debian.org/431708>)
+- Correct parse node links that span multiple (indented) lines.
+    (<https://github.com/baszoetekouw/pinfo/issues/6>)
+- If a direct info page hit isn't found, try to look up a node in the dir
+    (<https://github.com/baszoetekouw/pinfo/issues/6>)
+- Improve lookup of info pages
+    (<https://github.com/baszoetekouw/pinfo/issues/6>)
+- Fix linking to man pages in a different section
+    (<https://github.com/baszoetekouw/pinfo/issues/6>)
+- Fix the -n/--node command line option
+    (<https://bugs.launchpad.net/ubuntu/+source/pinfo/+bug/1599374>)
 
 0.6.10:
-  - Fix issue with handling of suspend/resume and character input
+
+- Fix issue with handling of suspend/resume and character input
     (thanks to Scott Mcdermott for the patch)
-  - Move variable declarations to the start of a block, to accomodate non-gcc
+- Move variable declarations to the start of a block, to accomodate non-gcc
     compilers.  Thanks to Anonymous for the patches submitted to Alioth.
 
 0.6.9
-  - New maintainer: Bas Zoetekouw <bas@debian.org>
-  - License is now GPL version 2 only
-  - Updated German, Dutch, English, Polish, Russian, Czech translations and
+
+- New maintainer: Bas Zoetekouw <bas@debian.org>
+- License is now GPL version 2 only
+- Updated German, Dutch, English, Polish, Russian, Czech translations and
     added Basque, Swedish, Viernamese and Brazilian translations.  Thanks to
     Jens Seidel, Rene van Bevern, Piarres Beobide, Krzysztof Krzyzaniak, Yuri
     Kozlov,  Eddy Petrişor, Katarína Machálková, Clytie Siddall and Felipe
     Augusto van de Wiel.
-  - Nodes containing a "." are now correctly found
-  - Non-ASCII man pages are displayed correctly
-  - Improved the history behavior of the search input line
-  - Broken tag tables are now automatically fixed
-  - Don't segfault when a broken regexp is entered
-  - Fixed a number of segfaults caused by using uninitialized pointers and
+- Nodes containing a "." are now correctly found
+- Non-ASCII man pages are displayed correctly
+- Improved the history behavior of the search input line
+- Broken tag tables are now automatically fixed
+- Don't segfault when a broken regexp is entered
+- Fixed a number of segfaults caused by using uninitialized pointers and
     off-by-1 errors
-  - Fixed heap corruption caused by non-ascii chars in info pages
-  - Fixed a lot of patch searching issues
-  - Fixed text display on narrow terminals
-  - Fixed highlighting of searches
-  - The default pinforc now uses the terminal's default foreground and
+- Fixed heap corruption caused by non-ascii chars in info pages
+- Fixed a lot of patch searching issues
+- Fixed text display on narrow terminals
+- Fixed highlighting of searches
+- The default pinforc now uses the terminal's default foreground and
     background colors.  Thanks to Rob Funk for a patch.
-  - Use libreadline by default;  readline version 4 is now required.
-  - Better cooperation between ncurses and readline
-  - Fixed some memory leaks
-  - Got rid of tempnam() calls
-  - Fixed -Wall and -Wshadow compiler warnings
-  - Use utf8 in documentation files and fixed typoes
+- Use libreadline by default;  readline version 4 is now required.
+- Better cooperation between ncurses and readline
+- Fixed some memory leaks
+- Got rid of tempnam() calls
+- Fixed -Wall and -Wshadow compiler warnings
+- Use utf8 in documentation files and fixed typoes
 
 0.6.8
   Patches from Witold Filipczyk for node detection algorithms in man
@@ -90,7 +97,7 @@
   Fixed handling of info entries like `emacs21/emacs'--modified
   function matchfile().
   Added autmatical detection of rawfilename for filenames beginning
-  with `../', `./', `/' in main().
+  with`../', `./',`/' in main().
   Added support for '(gcc)Introduction' like specification of nodes.
 0.6.6
   bugfixes for userdefined rcfile and configuration inconsistences
@@ -133,12 +140,12 @@
   Fixed problem with black bar on first man page
   Fixed buggy whitespace-skip comparing procedure
   Manual code can now handle hyphenated url links (it's still not
-  perfect with e-mail--it only works if the `@' is in the upper line)
+  perfect with e-mail--it only works if the`@' is in the upper line)
   Fixed buf in indirect-file search engine (a misplaced if())
   Added texinfo documentation.
   Manual code is now case insensitive as far as sections are considered
 0.6.0
-  Replaced evil `myclrtoeol' with `bkgdset+clrtoeol'
+  Replaced evil `myclrtoeol' with`bkgdset+clrtoeol'
   Fixed putenv handler
   Make install does not overwrite old pinforc anymore (this has it's
   bad side--you must deal alone with version incompatibilities)
@@ -168,7 +175,7 @@
   Fixed displaying of concatenated dir pages
   Speed up alghoritms
   Transparent colors
-  Manual code can now handle hyperlinks splitted by `-' sign
+  Manual code can now handle hyperlinks splitted by`-' sign
   Security filter for dangerous man macros (experimental)
 0.5.5
   Fixed nasty sigsegv bug in manual code.
@@ -176,14 +183,14 @@
   Many memory bugs fixed in the whole code.
   Added key for going to specified line.
   Added dir page name lookups. Now you will be able f.i. to go to
-  `textutils:cat'    after typing `pinfo cat'.
+  `textutils:cat'    after typing`pinfo cat'.
   Added support for printing. (with highlights, as in groff -Tascii).
 0.5.4
   Fixed highlighting code (the handling of \t's).
   PgDn works now more `traditionaly' -- at end the last link is
   selected.
   Added FILTER-0xB7 config option.
-  Fixed bug in `*note:' detection.
+  Fixed bug in`*note:' detection.
   Added option for enabling quit confirmation at exit (as in lynx).
   Added option for clearing screen at exit
   Added support for lightbackground
@@ -230,12 +237,12 @@
   Added support for http:// and ftp:// URLs embedded into
   man pages/info pages.
   Secured the mechanism of tmp file creation
-  Added optional highlight for `quoted' text in info files
+  Added optional highlight for`quoted' text in info files
   Moved to configure (autoconf, automake)!
   Fixed sigsegv by regexp searchs.
   Added support for infos not ending with `.info*' suffix
   Added new feature to key_goto -- now when you pass there
-  a name, ending with `.info', then key_goto will move you not
+  a name, ending with`.info', then key_goto will move you not
   to specified node, but to specified info document.
   Locale support now is working (see at the example with polish
   translation).
@@ -330,7 +337,7 @@
   Tiny change -- added some checking for mvaddstr functions, so they
   don't drop core if there's no menu/note token.
 0.2.2
-  Added support for old curses (macro definition ___OLD_CURSES___,
+  Added support for old curses (macro definition *__OLD_CURSES__*,
   enabled in Makefile. That was enough to compile this program
   under HP-UX :)
 0.2.1
